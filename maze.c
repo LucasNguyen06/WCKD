@@ -119,12 +119,48 @@ void generate_maze(){
                 maze[get_index(x, y)] |= CELL_PATH_W;
                 push((Point){x - 1, y});
                 break;
-        }
+            }
+            visited_cells++;
+        } else {
+            pop();
+        }   
     }
-
-        
-
-
 }
 
+// Drawing function for GTK 4
+void draw_maze(GtkDrawingArea *area, cairo_t *cr, int width, int height, gpointer data) {
+    cairo_set_source_rgb(cr, 0, 0, 0);
+    cairo_paint(cr);
+    
+    cairo_set_source_rgb(cr, 1, 1, 1); // White color for paths
+    for (int x = 0; x < MAZE_WIDTH; x++) {
+        for (int y = 0; y < MAZE_HEIGHT; y++) {
+            int index = get_index(x, y);
+            if (maze[index] & CELL_VISITED) {
+                cairo_rectangle(cr, x * CELL_SIZE, y * CELL_SIZE, CELL_SIZE, CELL_SIZE);
+                cairo_fill(cr);
+            }
+        }
+    }
+}
 
+-
+int main(int argc, char *argv[]) {
+    gtk_init(&argc, &argv);
+    generate_maze();
+    
+    GtkWidget *window = gtk_window_new();
+    gtk_window_set_title(GTK_WINDOW(window), "Maze Generator");
+    gtk_window_set_default_size(GTK_WINDOW(window), MAZE_WIDTH * CELL_SIZE, MAZE_HEIGHT * CELL_SIZE);
+    
+    GtkWidget *drawing_area = gtk_drawing_area_new();
+    gtk_drawing_area_set_draw_func(GTK_DRAWING_AREA(drawing_area), draw_maze, NULL, NULL);
+    
+    gtk_window_set_child(GTK_WINDOW(window), drawing_area);
+    gtk_widget_show(window);
+    
+    g_signal_connect(window, "destroy", G_CALLBACK(gtk_main_quit), NULL);
+    gtk_main();
+    
+    return 0;
+}
