@@ -2,7 +2,8 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <time.h>
-//GTK library?
+#include <string.h>
+#include <gtk/gtk.h>
 
 //Define the size of the maze, can be change
 #define MAZE_WIDTH 50
