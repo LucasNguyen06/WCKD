@@ -126,7 +126,14 @@ void generate_maze(){
         }   
     }
 }
+void convert_maze(int converted[][], int initial []){
+    for (int i;i=0, i<MAZE_HEIGHT){
+        for (int j; j=0, j<MAZE_WIDTH){
+            converted[i][j] = initial[get_index(i,j)]
+        }
+    }
 
+}
 // Drawing function for GTK 4
 void draw_maze(GtkDrawingArea *area, cairo_t *cr, int width, int height, gpointer data) {
     cairo_set_source_rgb(cr, 0, 0, 0);
