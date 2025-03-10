@@ -17,7 +17,7 @@ enum{
     CELL_PATH_N = 0x01, //North(up) = 00001(binary)
     CELL_PATH_S = 0x02, //South(down) = 00010
     CELL_PATH_E = 0x04, //East(left) = 00100
-    CELL_PATH_W = 0x010, //West(right) = 01000
+    CELL_PATH_W = 0x08, //West(right) = 01000
     CELL_VISITED = 0x10, //Visisted cells = 10000
 };
 
@@ -98,30 +98,32 @@ void generate_maze(){
         
 
         switch(dir){
-            //Case 1:
+            //Case 1: Moving north
             case 0:
-                maze[get_index(x, y - 1)] |= CELL_VISITED | CELL_PATH_S;
-                maze[get_index(x, y)] |= CELL_PATH_N;
-                push((Point){x, y - 1});
+                maze[get_index(x, y - 1)] |= CELL_VISITED | CELL_PATH_S; //remove the south wall of the new cell
+                maze[get_index(x, y)] |= CELL_PATH_N; //remove the north wall of current cell
+                push((Point){x, y - 1}); //push onto stack, move onto new cell
                 break;
-            //Case 2:
-                maze[get_index(x + 1, y)] |= CELL_VISITED | CELL_PATH_W;
-                maze[get_index(x, y)] |= CELL_PATH_E;
-                push((Point){x + 1, y});
+                //
+            case 1: //Case 2: Moving east
+                maze[get_index(x + 1, y)] |= CELL_VISITED | CELL_PATH_W; //remove west wall of the new cell
+                maze[get_index(x, y)] |= CELL_PATH_E; //remove the east wall of the current cell
+                push((Point){x + 1, y}); //push onto stack, move onto new cell
                 break;
-            //Case 3:
-                maze[get_index(x, y + 1)] |= CELL_VISITED | CELL_PATH_N;
-                maze[get_index(x, y)] |= CELL_PATH_S;
-                push((Point){x, y + 1});
+            case 2: //Case 3: Moving south
+                maze[get_index(x, y + 1)] |= CELL_VISITED | CELL_PATH_N; //remove north wall of new cell
+                maze[get_index(x, y)] |= CELL_PATH_S; //remove south wall of curent cell
+                push((Point){x, y + 1}); //push onto stack, move onto new cell
                 break;
-            //Case 4:
-                maze[get_index(x - 1, y)] |= CELL_VISITED | CELL_PATH_E;
-                maze[get_index(x, y)] |= CELL_PATH_W;
-                push((Point){x - 1, y});
+            case 3: //Case 4: Moving west
+                maze[get_index(x - 1, y)] |= CELL_VISITED | CELL_PATH_E; //remove east wall of new cell
+                maze[get_index(x, y)] |= CELL_PATH_W; //remove west wall of current cell
+                push((Point){x - 1, y}); //push onto stack, move onto new cell
                 break;
             }
-            visited_cells++;
+            visited_cell++;
         } else {
+            //if all cells are visited, backtrack
             pop();
         }   
     }
