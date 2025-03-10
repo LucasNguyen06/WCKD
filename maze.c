@@ -3,11 +3,11 @@
 #include <stdbool.h>
 #include <time.h>
 #include <string.h>
-#include <gtk/gtk.h>
+//#include <gtk/gtk.h>
 
 //Define the size of the maze, can be change
-#define MAZE_WIDTH 50
-#define MAZE_HEIGHT 50
+#define MAZE_WIDTH 10
+#define MAZE_HEIGHT 10
 #define CELL_SIZE 20 //Cell size 20x20 pixels in GTK window
 
 //Paths: North, South, East, and West
@@ -22,10 +22,10 @@ enum{
 };
 
 //Coordinate structure to store x and y
-typedef struct coords Point;
+
 typedef struct coords{
     int x, y;
-}; 
+}Point; 
 
 //array to store cells current state(i.e visited?)
 int maze[MAZE_WIDTH * MAZE_HEIGHT];
@@ -43,11 +43,11 @@ bool isEmpty(){
 
 //PUSH function, return updated count
 void push(Point p){
-    return stack[stack_size++] = p;
+    stack[stack_size++] = p;
 }
 
 //POP Function, return updated count
-void pop(){
+Point pop(){
     return stack[--stack_size];
 }
 
@@ -120,20 +120,20 @@ void generate_maze(){
                 push((Point){x - 1, y});
                 break;
             }
-            visited_cells++;
+            visited_cell++;
         } else {
             pop();
         }   
     }
 }
-void convert_maze(int converted[][], int initial []){
+void convert_maze(int converted[MAZE_HEIGHT][MAZE_WIDTH], int initial [MAZE_HEIGHT*MAZE_WIDTH]){
     for (int i=0; i<MAZE_HEIGHT; i++){
         for (int j=0; j<MAZE_WIDTH;j++){
-            converted[i][j] = initial[get_index(i,j)]
+            converted[i][j] = initial[get_index(i,j)];
         }
     }}
 
-void print_converted(int convertedmaze[][]){
+void print_converted(int convertedmaze[MAZE_HEIGHT][MAZE_WIDTH]){
     for (int i=0; i<MAZE_HEIGHT; i++){
         for (int j=0; j<MAZE_WIDTH;j++){
             printf (" %d ",convertedmaze[i][j]);
@@ -142,6 +142,7 @@ void print_converted(int convertedmaze[][]){
 }
 }
 // Drawing function for GTK 4
+/*  
 void draw_maze(GtkDrawingArea *area, cairo_t *cr, int width, int height, gpointer data) {
     cairo_set_source_rgb(cr, 0, 0, 0);
     cairo_paint(cr);
@@ -177,4 +178,13 @@ int main(int argc, char *argv[]) {
     gtk_main();
     
     return 0;
+}
+*/ 
+
+int main (){
+
+    generate_maze;
+    int convertedmaze[MAZE_HEIGHT][MAZE_WIDTH];
+    convert_maze(convertedmaze,maze);
+    print_converted(convertedmaze);
 }
