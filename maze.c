@@ -83,7 +83,7 @@ void generate_maze(){
         if(y > 0 && !(maze[get_index(x, y -1)] & CELL_VISITED))
             neighbors[count++]=0;
         //Check if East is unvisited
-        if (x < MAZE_WIDTH - 1 && !(maze[(x + 1, y)] & CELL_VISITED))
+        if (x < MAZE_WIDTH - 1 && !(maze[get_index(x + 1, y)] & CELL_VISITED))
             neighbors[count++] = 1;
         //Check if South is unvisited
         if(y < MAZE_HEIGHT - 1 && !(maze[get_index(x, y + 1)] & CELL_VISITED))
@@ -104,17 +104,17 @@ void generate_maze(){
                 maze[get_index(x, y)] |= CELL_PATH_N;
                 push((Point){x, y - 1});
                 break;
-            //Case 2:
+            case 1://Case 2:
                 maze[get_index(x + 1, y)] |= CELL_VISITED | CELL_PATH_W;
                 maze[get_index(x, y)] |= CELL_PATH_E;
                 push((Point){x + 1, y});
                 break;
-            //Case 3:
+            case 2://Case 3:
                 maze[get_index(x, y + 1)] |= CELL_VISITED | CELL_PATH_N;
                 maze[get_index(x, y)] |= CELL_PATH_S;
                 push((Point){x, y + 1});
                 break;
-            //Case 4:
+            case 3://Case 4:
                 maze[get_index(x - 1, y)] |= CELL_VISITED | CELL_PATH_E;
                 maze[get_index(x, y)] |= CELL_PATH_W;
                 push((Point){x - 1, y});
@@ -129,7 +129,7 @@ void generate_maze(){
 void convert_maze(int converted[MAZE_HEIGHT][MAZE_WIDTH], int initial [MAZE_HEIGHT*MAZE_WIDTH]){
     for (int i=0; i<MAZE_HEIGHT; i++){
         for (int j=0; j<MAZE_WIDTH;j++){
-            converted[i][j] = initial[get_index(i,j)];
+            converted[i][j] = initial[get_index(j,i)];
         }
     }}
 
@@ -183,7 +183,7 @@ int main(int argc, char *argv[]) {
 
 int main (){
 
-    generate_maze;
+    generate_maze();
     int convertedmaze[MAZE_HEIGHT][MAZE_WIDTH];
     convert_maze(convertedmaze,maze);
     print_converted(convertedmaze);
