@@ -127,12 +127,19 @@ void generate_maze(){
     }
 }
 void convert_maze(int converted[][], int initial []){
-    for (int i;i=0, i<MAZE_HEIGHT){
-        for (int j; j=0, j<MAZE_WIDTH){
+    for (int i=0; i<MAZE_HEIGHT; i++){
+        for (int j=0; j<MAZE_WIDTH;j++){
             converted[i][j] = initial[get_index(i,j)]
         }
-    }
+    }}
 
+void print_converted(int convertedmaze[][]){
+    for (int i=0; i<MAZE_HEIGHT; i++){
+        for (int j=0; j<MAZE_WIDTH;j++){
+            printf (" %d ",convertedmaze[i][j]);
+        }
+    printf("\n");
+}
 }
 // Drawing function for GTK 4
 void draw_maze(GtkDrawingArea *area, cairo_t *cr, int width, int height, gpointer data) {
