@@ -22,10 +22,9 @@ enum{
 };
 
 //Coordinate structure to store x and y
-typedef struct coords Point;
 typedef struct coords{
     int x, y;
-}; 
+}Point; 
 
 //array to store cells current state(i.e visited?)
 int maze[MAZE_WIDTH * MAZE_HEIGHT];
@@ -43,11 +42,11 @@ bool isEmpty(){
 
 //PUSH function, return updated count
 void push(Point p){
-    return stack[stack_size++] = p;
+    stack[stack_size++] = p;
 }
 
 //POP Function, return updated count
-void pop(){
+Point pop(){
     return stack[--stack_size];
 }
 
@@ -83,7 +82,7 @@ void generate_maze(){
         if(y > 0 && !(maze[get_index(x, y -1)] & CELL_VISITED))
             neighbors[count++]=0;
         //Check if East is unvisited
-        if (x < MAZE_WIDTH - 1 && !(maze[(x + 1, y)] & CELL_VISITED))
+        if (x < MAZE_WIDTH - 1 && !(maze[get_index(x + 1, y)] & CELL_VISITED))
             neighbors[count++] = 1;
         //Check if South is unvisited
         if(y < MAZE_HEIGHT - 1 && !(maze[get_index(x, y + 1)] & CELL_VISITED))
