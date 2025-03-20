@@ -6,8 +6,8 @@
 //#include <gtk/gtk.h>
 
 //Define the size of the maze, can be change
-#define MAZE_WIDTH 30
-#define MAZE_HEIGHT 30
+#define MAZE_WIDTH 25
+#define MAZE_HEIGHT 25
 #define CELL_SIZE 20 //Cell size 20x20 pixels in GTK window
 
 //Paths: North, South, East, and West
