@@ -200,12 +200,12 @@ void print_maze() {
         }
     } 
 
-
+    printf("\033[1;32m ");
     for (int i = 0; i < (MAZE_HEIGHT*2)+1; i++) {
         for (int j = 0; j < (MAZE_WIDTH*2)+1; j++) {
             printf("%c ", visual_maze[i][j]);
         }
-    printf("\n");
+    printf("\033[0m\n");
     }    
 }
 
@@ -263,7 +263,7 @@ void addExits(){
 
 int main() {
     generate_maze();
-    printf("in main\n");
+    printf("in main check\n");
     addEntranceToBox();
     addExits();
     print_maze();
