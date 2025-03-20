@@ -14,11 +14,12 @@
 //Using hexidecimal as bit flag
 //Cause it memory efficient as it can store multiple direction in a single int using bitwise operation
 enum{
-    CELL_PATH_N = 0x01, //North(up) = 00001(binary)
-    CELL_PATH_S = 0x02, //South(down) = 00010
-    CELL_PATH_E = 0x04, //East(left) = 00100
-    CELL_PATH_W = 0x08, //West(right) = 01000
-    CELL_VISITED = 0x10, //Visisted cells = 10000
+    CELL_PATH_N = 0x01, //North(up) = 00 0001(binary)
+    CELL_PATH_S = 0x02, //South(down) = 00 0010
+    CELL_PATH_E = 0x04, //East(left) = 00 0100
+    CELL_PATH_W = 0x08, //West(right) = 00 1000
+    CELL_VISITED = 0x16, //Visisted cells = 01 0000
+    CELL_EXIT = 0x32, //cell is one of the exits 10 0000
 };
 
 //Coordinate structure to store x and y
@@ -238,21 +239,25 @@ void addExits(){
     //Top side exit, y= 0
     int topExit = rand() % MAZE_WIDTH;
     maze[get_index(topExit, 0)] |= CELL_PATH_N;
+    maze[get_index(topExit, 0)] |= CELL_EXIT;
     unfill(0, (topExit * 2) + 1);//paths occupies odd number, so +1 after *2. Repeat for all
 
     //Bottom side exit, y = -1
     int bottomExit = rand() % MAZE_WIDTH;
     maze[get_index(bottomExit, MAZE_HEIGHT - 1)] |= CELL_PATH_S;
+    maze[get_index(bottomExit, MAZE_HEIGHT -1 )] |= CELL_EXIT;
     unfill(MAZE_HEIGHT * 2, (bottomExit * 2) +1);
 
     //Left side exit, x = 0
     int leftExit = rand() % MAZE_HEIGHT;
     maze[get_index(0, leftExit)] |= CELL_PATH_W;
+    maze[get_index(0, leftExit)] |= CELL_EXIT;
     unfill((leftExit * 2) + 1, 0);
 
     //right side exit, x = -1
     int rightExit = rand() % MAZE_HEIGHT;
     maze[get_index(MAZE_WIDTH - 1, rightExit)] |= CELL_PATH_E;
+    maze[get_index(MAZE_WIDTH - 1, rightExit)] |= CELL_EXIT;
     unfill((rightExit * 2) + 1, MAZE_WIDTH * 2);
 }
 
