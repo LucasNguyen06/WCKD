@@ -18,7 +18,7 @@ enum{
     CELL_PATH_S = 0x02, //South(down) = 00 0010
     CELL_PATH_E = 0x04, //East(left) = 00 0100
     CELL_PATH_W = 0x08, //West(right) = 00 1000
-    CELL_VISITED = 0x16, //Visisted cells = 01 0000
+    CELL_VISITED = 0x10, //Visisted cells = 01 0000
     CELL_EXIT = 0x32, //cell is one of the exits 10 0000
 };
 
@@ -200,13 +200,14 @@ void print_maze() {
         }
     } 
 
-    printf("\033[1;32m ");
+    printf("\033[1;32m");
     for (int i = 0; i < (MAZE_HEIGHT*2)+1; i++) {
         for (int j = 0; j < (MAZE_WIDTH*2)+1; j++) {
             printf("%c ", visual_maze[i][j]);
         }
-    printf("\033[0m\n");
-    }    
+    printf("\n");
+    }   
+    printf("\033[0m ");
 }
 
 //Add entrance function to the 3x3 box. Will add entrance on each side of the box, in the middle
@@ -263,7 +264,7 @@ void addExits(){
 
 int main() {
     generate_maze();
-    printf("in main check\n");
+    printf("in main double check\n");
     addEntranceToBox();
     addExits();
     print_maze();
