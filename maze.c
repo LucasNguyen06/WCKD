@@ -27,8 +27,22 @@ typedef struct coords{
     int x, y;
 }Point;
 
+typedef struct cell{
+    int x, y;
+    int cellVal;
+    struct cell* upNeigh; //neighbor 1
+    struct cell* downNeigh; //neighbor 2
+    struct cell* leftNeigh; //neightbor 3
+    struct cell* rightNeigh; //neighbor 4
+    int originator; //0 if start (center)
+}Cell;
+
 //array to store cells current state(i.e visited?)
 int maze[MAZE_WIDTH * MAZE_HEIGHT];
+//2D array for keeping track of if the cell has been added to tree
+int added[MAZE_HEIGHT][MAZE_WIDTH] = {0};
+//2D array of exit locations
+int exitLocations[4][2];
 //stack for back tracking
 Point stack[MAZE_WIDTH * MAZE_HEIGHT];
 //track number of elements in stack
@@ -214,7 +228,7 @@ void print_maze() {
 void addEntranceToBox(){
     //Top left corner of 3x3
     int start_x = MAZE_WIDTH/2 - 1;
-    int start_y = MAZE_HEIGHT/2 -1;
+    int start_y = MAZE_HEIGHT/2 - 1;
 
     //Top side entrance
     maze[get_index(start_x + 1, start_y - 1)] |= CELL_VISITED | CELL_PATH_S;
@@ -262,11 +276,73 @@ void addExits(){
     unfill((rightExit * 2) + 1, MAZE_WIDTH * 2);
 }
 
+Cell* createCell(int x, int y) {
+    if (added[x][y] == 1) return NULL;
+    Cell* newCell = (Cell*)malloc(sizeof(Cell));
+    newCell->x = x;
+    newCell->y = y;
+    newCell->cellVal = maze[get_index(x, y)];
+    newCell->upNeigh = NULL;
+    newCell->downNeigh = NULL;
+    newCell->leftNeigh = NULL;
+    newCell->rightNeigh = NULL;
+    newCell->originator = 0;
+    added[x][y] = 1;
+    return newCell;
+}
+
+void solve_maze() {
+    int exitsFound = 0;
+    Cell* center = createCell((MAZE_WIDTH/2 - 1), (MAZE_HEIGHT/2 - 1));
+    Cell* explorer = center;
+    while (exitsFound < 4) {
+        printf("looping\n");
+        if ((explorer->cellVal & CELL_EXIT) == CELL_EXIT) {
+            //if exit found
+            exitLocations[exitsFound][0] = explorer->x;
+            exitLocations[exitsFound][1] = explorer->y;
+            exitsFound++;
+            printf("An exit found at y=%d, x=%d!\n", explorer->x, explorer->y);
+
+        } else {
+//note to andrew: consider null from cycle thing
+            if ((explorer->cellVal & CELL_PATH_N) == CELL_PATH_N) {
+                explorer->upNeigh = createCell(explorer->x, explorer->y-1);
+                if (explorer->upNeigh == NULL) continue; //in case of the cycle error
+                (explorer->upNeigh)->originator = 2; //came from south
+                explorer = explorer->upNeigh;
+            } else if ((explorer->cellVal & CELL_PATH_S) == CELL_PATH_S) {
+                explorer->downNeigh = createCell(explorer->x, explorer->y+1);
+                if (explorer->downNeigh == NULL) continue; //in case of the cycle error
+                (explorer->downNeigh)->originator = 1; //came from north
+                explorer = explorer->downNeigh;
+            } else if ((explorer->cellVal & CELL_PATH_W) == CELL_PATH_W) {
+                explorer->leftNeigh = createCell(explorer->x-1, explorer->y);
+                if (explorer->leftNeigh == NULL) continue; //in case of the cycle error
+                (explorer->leftNeigh)->originator = 4; //came from east
+                explorer = explorer->leftNeigh;
+            } else if ((explorer->cellVal & CELL_PATH_E) == CELL_PATH_E) {
+                explorer->rightNeigh = createCell(explorer->x+1, explorer->y);
+                if (explorer->rightNeigh == NULL) continue; //in case of the cycle error
+                (explorer->rightNeigh)->originator = 3; //came from west
+                explorer = explorer->rightNeigh;
+            } else {
+                printf("Full maze explored!\n");
+            }
+
+        }  
+
+    }
+
+}
+
+
 int main() {
     generate_maze();
     printf("in main double check\n");
     addEntranceToBox();
     addExits();
+    //solve_maze();
     print_maze();
 }
 /*
