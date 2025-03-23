@@ -181,7 +181,7 @@ void print_maze() {
     for (int i = 0; i < MAZE_HEIGHT; i++) { //by column
         for (int j = 0; j < MAZE_WIDTH; j++) { //by row
 
-            printf("%d ", maze[get_index(j,i)]); //for printing the maze gen number to check
+            printf("%d ", maze[get_index(i,j)]); //for printing the maze gen number to check
 
             workingX = 2*j + 1;
             workingY = 2*i + 1;
