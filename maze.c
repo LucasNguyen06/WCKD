@@ -6,8 +6,8 @@
 //#include <gtk/gtk.h>
 
 //Define the size of the maze, can be change
-#define MAZE_WIDTH 17
-#define MAZE_HEIGHT 17
+#define MAZE_WIDTH 15
+#define MAZE_HEIGHT 15
 #define CELL_SIZE 20 //Cell size 20x20 pixels in GTK window
 
 //Paths: North, South, East, and West
@@ -56,6 +56,8 @@ int stack_size = 0;
 int visited_cell = 0;
 //declare visual maze of be displayed
 char visual_maze[(MAZE_HEIGHT*2)+1][(MAZE_WIDTH*2)+1];
+
+int exits [2][4];
 
 //Check if stack is empty, then return 0
 bool isEmpty(){
@@ -342,9 +344,15 @@ Cell* solve_maze() {
         if ((explorer->cellVal & CELL_EXIT) == CELL_EXIT) {
             //if exit found
             exitLocations[exitsFound] = explorer;
+            exits[0][exitsFound]= explorer->x;
+            exits[1][exitsFound]= explorer->y;
             exitsFound++;
-            printf("An exit found at y=%d, x=%d!\n", explorer->x, explorer->y);
+            printf("An exit found at x=%d, y=%d!\n", explorer->x, explorer->y);
+            maze[get_index(explorer->x,explorer->y)] -= 32;
+           
             explorer = center;
+            memset(added,0,sizeof(added));
+
 
         } else {
             if (((explorer->cellVal & CELL_PATH_N) == CELL_PATH_N) && (added[explorer->x][explorer->y-1] == 0)) {
@@ -404,28 +412,24 @@ void colourPath(Cell *center) {
     do{  //loop till reaches the middle
         switch (current->originator) {
             case 1:
-                printf("%d\n", (current->cellVal));
-                printf("%d\n", (current->upNeigh)->cellVal);
+                                
                 current = current->upNeigh;
-                printf("%d\n", (current->cellVal));
+                
                 break;
             case 2:
-                printf("%d\n", (current->cellVal));
-                printf("%d\n", (current->downNeigh)->cellVal);
+                
                 current = current->downNeigh;
-                printf("%d\n", (current->cellVal));
+                
                 break;
             case 3: 
-                printf("%d\n", (current->cellVal));
-                printf("%d\n", (current->leftNeigh)->cellVal);
+                
                 current = current->leftNeigh;
-                printf("%d\n", (current->cellVal));
+            
                 break;
             case 4:
-                printf("%d\n", (current->cellVal));
-                printf("%d\n", (current->rightNeigh)->cellVal);
+              
                 current = current->rightNeigh;
-                printf("%d\n", (current->cellVal));
+                
                 break;
             default:
                 printf("colour error or end\n"); 
