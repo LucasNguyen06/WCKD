@@ -344,6 +344,7 @@ Cell* solve_maze() {
             exitLocations[exitsFound] = explorer;
             exitsFound++;
             printf("An exit found at y=%d, x=%d!\n", explorer->x, explorer->y);
+            explorer = center;
 
         } else {
             if (((explorer->cellVal & CELL_PATH_N) == CELL_PATH_N) && (added[explorer->x][explorer->y-1] == 0)) {
