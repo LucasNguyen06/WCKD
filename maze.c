@@ -440,9 +440,9 @@ int main() {
     addEntranceToBox();
     addExits();
     print_maze();
-    //Cell* center = solve_maze();
-    //colourPath(center);
-    //print_maze();
+    Cell* center = solve_maze();
+    colourPath(center);
+    print_maze();
 }
 /*
 int main(int argc, char *argv[]) {
