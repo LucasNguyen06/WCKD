@@ -346,40 +346,40 @@ Cell* solve_maze() {
             printf("An exit found at y=%d, x=%d!\n", explorer->x, explorer->y);
 
         } else {
-            if (((explorer->cellVal & CELL_PATH_N) == CELL_PATH_N) && (added[explorer->x-1][explorer->y] == 0)) {
+            if (((explorer->cellVal & CELL_PATH_N) == CELL_PATH_N) && (added[explorer->x][explorer->y-1] == 0)) {
                 printf("moving north\n");
-                printf("at %d going to %d\n\n", maze[get_index(explorer->x, explorer->y)], maze[get_index(explorer->x-1, explorer->y)]);
-                explorer->upNeigh = createCell(explorer->x-1, explorer->y);
+                printf("at %d going to %d\n\n", maze[get_index(explorer->x, explorer->y)], maze[get_index(explorer->x, explorer->y-1)]);
+                explorer->upNeigh = createCell(explorer->x, explorer->y-1);
                 if (explorer->upNeigh == NULL) continue; //in case of the cycle error (redundant)
                 (explorer->upNeigh)->originator = 2; //came from south
                 temp = explorer;
                 explorer = explorer->upNeigh;
                 explorer->downNeigh = temp;
                 pushC(explorer);
-            } else if (((explorer->cellVal & CELL_PATH_S) == CELL_PATH_S) && (added[explorer->x+1][explorer->y] == 0)) {
+            } else if (((explorer->cellVal & CELL_PATH_S) == CELL_PATH_S) && (added[explorer->x][explorer->y+1] == 0)) {
                 printf("moving south\n");
-                printf("at %d going to %d\n\n", maze[get_index(explorer->x, explorer->y)], maze[get_index(explorer->x+1, explorer->y)]);
-                explorer->downNeigh = createCell(explorer->x+1, explorer->y);
+                printf("at %d going to %d\n\n", maze[get_index(explorer->x, explorer->y)], maze[get_index(explorer->x, explorer->y+1)]);
+                explorer->downNeigh = createCell(explorer->x, explorer->y+1);
                 if (explorer->downNeigh == NULL) continue; //in case of the cycle error
                 (explorer->downNeigh)->originator = 1; //came from north
                 temp = explorer;
                 explorer = explorer->downNeigh;
                 explorer->upNeigh = temp;
                 pushC(explorer);
-            } else if (((explorer->cellVal & CELL_PATH_W) == CELL_PATH_W) && (added[explorer->x][explorer->y-1] == 0)) {
+            } else if (((explorer->cellVal & CELL_PATH_W) == CELL_PATH_W) && (added[explorer->x-1][explorer->y] == 0)) {
                 printf("moving west\n");
-                printf("at %d going to %d\n\n", maze[get_index(explorer->x, explorer->y)], maze[get_index(explorer->x, explorer->y-1)]);
-                explorer->leftNeigh = createCell(explorer->x, explorer->y-1);
+                printf("at %d going to %d\n\n", maze[get_index(explorer->x, explorer->y)], maze[get_index(explorer->x-1, explorer->y)]);
+                explorer->leftNeigh = createCell(explorer->x-1, explorer->y);
                 if (explorer->leftNeigh == NULL) continue; //in case of the cycle error
                 (explorer->leftNeigh)->originator = 4; //came from east
                 temp = explorer;
                 explorer = explorer->leftNeigh;
                 explorer->rightNeigh = temp;
                 pushC(explorer);
-            } else if (((explorer->cellVal & CELL_PATH_E) == CELL_PATH_E) && (added[explorer->x][explorer->y+1] == 0)) {
+            } else if (((explorer->cellVal & CELL_PATH_E) == CELL_PATH_E) && (added[explorer->x+1][explorer->y] == 0)) {
                 printf("moving east\n");
-                printf("at %d going to %d\n\n", maze[get_index(explorer->x, explorer->y)], maze[get_index(explorer->x, explorer->y+1)]);
-                explorer->rightNeigh = createCell(explorer->x, explorer->y+1);
+                printf("at %d going to %d\n\n", maze[get_index(explorer->x, explorer->y)], maze[get_index(explorer->x+1, explorer->y)]);
+                explorer->rightNeigh = createCell(explorer->x+1, explorer->y);
                 if (explorer->rightNeigh == NULL) continue; //in case of the cycle error
                 (explorer->rightNeigh)->originator = 3; //came from west
                 temp = explorer;
