@@ -19,8 +19,8 @@ enum{
     CELL_PATH_E = 0x04, //East(left) = 00 0100
     CELL_PATH_W = 0x08, //West(right) = 00 1000
     CELL_VISITED = 0x10, //Visisted cells = 01 0000
-    CELL_EXIT = 0x32, //cell is one of the exits 10 0000
-    CELL_COLOUR = 0x64, //cell is in an exit path
+    CELL_EXIT = 0x20, //cell is one of the exits 100 0000
+    CELL_COLOUR = 0x40, //cell is in an exit path 100 0000
 };
 
 //Coordinate structure to store x and y
@@ -92,6 +92,12 @@ void intialize_center_box(){
     int start_x = MAZE_WIDTH / 2 - 1;
     int start_y = MAZE_HEIGHT / 2 - 1;
     //Need to iterate through 3 rows, 3 columns
+
+    maze[get_index(start_x + 1, start_y)] = 19;
+    maze[get_index(start_x + 1, start_y + 2)] = 19;
+    maze[get_index(start_x, start_y + 1)] = 28;
+    maze[get_index(start_x + 2, start_y + 1)] = 28;
+    
     for (int i = 0; i < 3; i++) {
         for (int j = 0; j < 3; j++) {
             //get coordinates of the cell in the box
@@ -217,7 +223,7 @@ void print_maze() {
             int walls = maze[get_index(j, i)];
 
             if ((maze[get_index(j, i)] & CELL_COLOUR) == CELL_COLOUR) {
-                visual_maze[workingX][workingY] = '.';
+                visual_maze[workingX][workingY] = '#';
             } else {
                 unfill(workingX, workingY);
             }
@@ -240,7 +246,7 @@ void print_maze() {
     printf("\033[1;32m");
     for (int i = 0; i < (MAZE_HEIGHT*2)+1; i++) {
         for (int j = 0; j < (MAZE_WIDTH*2)+1; j++) {
-            if (visual_maze[i][j] == '.') {
+            if (visual_maze[i][j] == '#') {
                 printf("\033[1;31m");
                 printf("%c ", visual_maze[i][j]);
                 printf("\033[1;32m");
