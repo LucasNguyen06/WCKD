@@ -6,8 +6,8 @@
 //#include <gtk/gtk.h>
 
 //Define the size of the maze, can be change
-#define MAZE_WIDTH 15
-#define MAZE_HEIGHT 15
+#define MAZE_WIDTH 17
+#define MAZE_HEIGHT 17
 #define CELL_SIZE 20 //Cell size 20x20 pixels in GTK window
 
 //Paths: North, South, East, and West
@@ -215,7 +215,7 @@ void print_maze() {
     for (int i = 0; i < MAZE_HEIGHT; i++) { //by row
         for (int j = 0; j < MAZE_WIDTH; j++) { //by column
 
-            printf("%3d ", maze[get_index(i,j)]); //for printing the maze gen number to check
+            printf("%3d ", maze[get_index(j,i)]); //for printing the maze gen number to check 
 
             workingX = 2*j + 1;
             workingY = 2*i + 1;
@@ -244,14 +244,15 @@ void print_maze() {
     } 
 
     printf("\033[1;32m");
+
     for (int i = 0; i < (MAZE_HEIGHT*2)+1; i++) {
         for (int j = 0; j < (MAZE_WIDTH*2)+1; j++) {
-            if (visual_maze[i][j] == '#') {
+            if (visual_maze[j][i] == '#') { //j i flipped down here
                 printf("\033[1;31m");
-                printf("%c ", visual_maze[i][j]);
+                printf("%c ", visual_maze[j][i]);
                 printf("\033[1;32m");
             } else {
-                printf("%c ", visual_maze[i][j]);
+                printf("%c ", visual_maze[j][i]);
             }
         }
     printf("\n");
@@ -287,25 +288,25 @@ void addExits(){
     srand(time(NULL)); //ensures different result every run
 
     //Top side exit, y= 0
-    int topExit = rand() % MAZE_WIDTH;
+    int topExit = (rand() % (MAZE_WIDTH - 2)) + 1;
     maze[get_index(topExit, 0)] |= CELL_PATH_N;
     maze[get_index(topExit, 0)] |= CELL_EXIT;
     unfill(0, (topExit * 2) + 1);//paths occupies odd number, so +1 after *2. Repeat for all
 
     //Bottom side exit, y = -1
-    int bottomExit = rand() % MAZE_WIDTH;
+    int bottomExit = (rand() % (MAZE_WIDTH - 2)) + 1;
     maze[get_index(bottomExit, MAZE_HEIGHT - 1)] |= CELL_PATH_S;
     maze[get_index(bottomExit, MAZE_HEIGHT -1 )] |= CELL_EXIT;
     unfill(MAZE_HEIGHT * 2, (bottomExit * 2) +1);
 
     //Left side exit, x = 0
-    int leftExit = rand() % MAZE_HEIGHT;
+    int leftExit = (rand() % (MAZE_HEIGHT - 2)) + 1;
     maze[get_index(0, leftExit)] |= CELL_PATH_W;
     maze[get_index(0, leftExit)] |= CELL_EXIT;
     unfill((leftExit * 2) + 1, 0);
 
     //right side exit, x = -1
-    int rightExit = rand() % MAZE_HEIGHT;
+    int rightExit = (rand() % (MAZE_HEIGHT - 2)) + 1;
     maze[get_index(MAZE_WIDTH - 1, rightExit)] |= CELL_PATH_E;
     maze[get_index(MAZE_WIDTH - 1, rightExit)] |= CELL_EXIT;
     unfill((rightExit * 2) + 1, MAZE_WIDTH * 2);
@@ -439,9 +440,9 @@ int main() {
     addEntranceToBox();
     addExits();
     print_maze();
-    Cell* center = solve_maze();
-    colourPath(center);
-    print_maze();
+    //Cell* center = solve_maze();
+    //colourPath(center);
+    //print_maze();
 }
 /*
 int main(int argc, char *argv[]) {
