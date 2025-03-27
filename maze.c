@@ -206,8 +206,8 @@ void print_maze() {
         }
 
 
-    for (int i = 0; i < MAZE_HEIGHT; i++) { //by column
-        for (int j = 0; j < MAZE_WIDTH; j++) { //by row
+    for (int i = 0; i < MAZE_HEIGHT; i++) { //by row
+        for (int j = 0; j < MAZE_WIDTH; j++) { //by column
 
             printf("%3d ", maze[get_index(i,j)]); //for printing the maze gen number to check
 
@@ -306,9 +306,9 @@ void addExits(){
 }
 
 Cell* createCell(int x, int y) {
-    printf("MADE IT IN\n");
+    //printf("MADE IT IN\n");
     if (added[x][y] == 1) return NULL;
-    printf("MADE IT PAST\n");
+    //printf("MADE IT PAST\n");
     Cell* newCell = (Cell*)malloc(sizeof(Cell));
     newCell->x = x;
     newCell->y = y;
@@ -331,7 +331,7 @@ Cell* solve_maze() {
     pushC(center);
 
     while ((exitsFound < 4) && (stackC_size > 0)) {
-        printf("looping\n");
+        //printf("looping\n");
         if ((explorer->cellVal & CELL_EXIT) == CELL_EXIT) {
             //if exit found
             exitLocations[exitsFound] = explorer;
@@ -341,7 +341,7 @@ Cell* solve_maze() {
         } else {
             if (((explorer->cellVal & CELL_PATH_N) == CELL_PATH_N) && (added[explorer->x-1][explorer->y] == 0)) {
                 printf("moving north\n");
-                printf("at %d going to %d\n", maze[get_index(explorer->x, explorer->y)], maze[get_index(explorer->x-1, explorer->y)]);
+                printf("at %d going to %d\n\n", maze[get_index(explorer->x, explorer->y)], maze[get_index(explorer->x-1, explorer->y)]);
                 explorer->upNeigh = createCell(explorer->x-1, explorer->y);
                 if (explorer->upNeigh == NULL) continue; //in case of the cycle error (redundant)
                 (explorer->upNeigh)->originator = 2; //came from south
@@ -351,7 +351,7 @@ Cell* solve_maze() {
                 pushC(explorer);
             } else if (((explorer->cellVal & CELL_PATH_S) == CELL_PATH_S) && (added[explorer->x+1][explorer->y] == 0)) {
                 printf("moving south\n");
-                printf("at %d going to %d\n", maze[get_index(explorer->x, explorer->y)], maze[get_index(explorer->x+1, explorer->y)]);
+                printf("at %d going to %d\n\n", maze[get_index(explorer->x, explorer->y)], maze[get_index(explorer->x+1, explorer->y)]);
                 explorer->downNeigh = createCell(explorer->x+1, explorer->y);
                 if (explorer->downNeigh == NULL) continue; //in case of the cycle error
                 (explorer->downNeigh)->originator = 1; //came from north
@@ -361,7 +361,7 @@ Cell* solve_maze() {
                 pushC(explorer);
             } else if (((explorer->cellVal & CELL_PATH_W) == CELL_PATH_W) && (added[explorer->x][explorer->y-1] == 0)) {
                 printf("moving west\n");
-                printf("at %d going to %d\n", maze[get_index(explorer->x, explorer->y)], maze[get_index(explorer->x, explorer->y-1)]);
+                printf("at %d going to %d\n\n", maze[get_index(explorer->x, explorer->y)], maze[get_index(explorer->x, explorer->y-1)]);
                 explorer->leftNeigh = createCell(explorer->x, explorer->y-1);
                 if (explorer->leftNeigh == NULL) continue; //in case of the cycle error
                 (explorer->leftNeigh)->originator = 4; //came from east
@@ -371,7 +371,7 @@ Cell* solve_maze() {
                 pushC(explorer);
             } else if (((explorer->cellVal & CELL_PATH_E) == CELL_PATH_E) && (added[explorer->x][explorer->y+1] == 0)) {
                 printf("moving east\n");
-                printf("at %d going to %d\n", maze[get_index(explorer->x, explorer->y)], maze[get_index(explorer->x, explorer->y+1)]);
+                printf("at %d going to %d\n\n", maze[get_index(explorer->x, explorer->y)], maze[get_index(explorer->x, explorer->y+1)]);
                 explorer->rightNeigh = createCell(explorer->x, explorer->y+1);
                 if (explorer->rightNeigh == NULL) continue; //in case of the cycle error
                 (explorer->rightNeigh)->originator = 3; //came from west
@@ -392,8 +392,8 @@ Cell* solve_maze() {
 
 void colourPath(Cell *center) {
     Cell* current = exitLocations[0]; //start at the exit
-    while (current->originator != 0) { //loop till reaches the middle
-        maze[get_index(current->x, current->y)] |= CELL_COLOUR; //change colour bit
+    maze[get_index(current->x, current->y)] |= CELL_COLOUR; //change colour bit
+    do{  //loop till reaches the middle
         switch (current->originator) {
             case 1:
                 printf("%d\n", (current->cellVal));
@@ -423,7 +423,8 @@ void colourPath(Cell *center) {
                 printf("colour error or end\n"); 
                 break;
         }
-    }
+        maze[get_index(current->x, current->y)] |= CELL_COLOUR; //change colour bit
+    } while (current->originator != 0);
 }
  
 int main() {
@@ -431,6 +432,7 @@ int main() {
     printf("in main double check\n");
     addEntranceToBox();
     addExits();
+    print_maze();
     Cell* center = solve_maze();
     colourPath(center);
     print_maze();
