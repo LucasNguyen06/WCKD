@@ -58,6 +58,8 @@ int stack_size = 0;
 int visited_cell = 0;
 //keep track of closest exit
 int shortestE = 0;
+//number of locatable exits
+int exitsFound = 0;
 //declare visual maze of be displayed
 char visual_maze[(MAZE_HEIGHT*2)+1][(MAZE_WIDTH*2)+1];
 
@@ -336,14 +338,13 @@ Cell* createCell(int x, int y) {
 }
 
 void solve_maze() {
-    int exitsFound = 0;
     Cell* center = createCell((MAZE_WIDTH/2), (MAZE_HEIGHT/2));
     Cell* explorer = center;
     Cell* temp; //for parent storing thing
   
     pushC(center);
 
-    while ((exitsFound < 4) && (stackC_size > 0)) {
+    while ((exitsFound < 4) && (stackC_size > 0)) { //
         //printf("looping\n");
         if ((explorer->cellVal & CELL_EXIT) == CELL_EXIT) {
             //if exit found
@@ -403,9 +404,7 @@ void solve_maze() {
                 //printf("Reached dead end or Full maze explored!\n");
                 explorer = popC();
             }
-
         }  
-
     }
     printf("Maze solved!\n");
 }
@@ -413,7 +412,7 @@ void solve_maze() {
 int findPaths() {
     int cellNum, pathL = 99999;
 
-    for (int i = 0; i < 4; i++) {
+    for (int i = 0; i < exitsFound; i++) {
         Cell* current = exitLocations[i]; //start at the exit
         cellNum = 0;
         do{  //loop till reaches the middle
@@ -438,9 +437,12 @@ int findPaths() {
             }
             cellNum++;
         } while (current->originator != 0);
+        printf("Length: %d\n", cellNum);
         if ((cellNum + 1) < pathL) {
             shortestE = i;
+            printf("Number of the new short path: %d\n", shortestE);
             pathL = cellNum + 1;
+            printf("Length of that path: %d\n", pathL);
         }
     }
     return pathL; //pathL, actual number of cells (starts at 1)
@@ -460,6 +462,7 @@ int main() {
     addExits();
     print_maze();
     solve_maze();
+    printf("Num exits: %d\n", exitsFound);
     int pathL = findPaths();
     displayPaths(pathL);
     print_maze();
