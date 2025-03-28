@@ -284,7 +284,7 @@ void print_maze() {
 
     for (int i = 0; i < (MAZE_HEIGHT*2)+1; i++) {
         for (int j = 0; j < (MAZE_WIDTH*2)+1; j++) {
-            if ((visual_maze[j][i] == '#') || ((visual_maze[j][i] == ' ') && (visual_maze[j-1][i] == '#') && (visual_maze[j+1][i])) || ((visual_maze[j][i] == ' ') && (visual_maze[j][i-1] == '#') && (visual_maze[j][i+1]))) { //j i flipped down here
+            if ((visual_maze[j][i] == '#') || ((visual_maze[j][i] == ' ') && (visual_maze[j-1][i] == '#') && (visual_maze[j+1][i] == '#')) || ((visual_maze[j][i] == ' ') && (visual_maze[j][i-1] == '#') && (visual_maze[j][i+1] == '#'))) { //j i flipped down here
                 printf("\033[1;31m");
                 printf("# ");
                 printf("\033[1;32m");
@@ -470,6 +470,9 @@ int findPaths() {
             }
             cellNum++;
         } while (current->originator != 0);
+        paths[i][0][cellNum] = MAZE_WIDTH/2; //make sure origin gets included
+        paths[i][1][cellNum] = MAZE_HEIGHT/2;
+
         printf("Length: %d\n", cellNum);
         if ((cellNum + 1) < pathL) {
             shortestE = i;
