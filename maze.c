@@ -101,11 +101,34 @@ void intialize_center_box(){
     int start_y = MAZE_HEIGHT / 2 - 1;
     //Need to iterate through 3 rows, 3 columns
 
-    maze[get_index(start_x + 1, start_y)] = 19;
-    maze[get_index(start_x + 1, start_y + 2)] = 19;
-    maze[get_index(start_x, start_y + 1)] = 28;
-    maze[get_index(start_x + 2, start_y + 1)] = 28;
+    for (int i = 0; i < 3; i++) {
+        for (int j = 0; j < 3; j++) {
+            //get coordinates of the cell in the box
+            int x = start_x + j;
+            int y = start_y + i;
+            int index = get_index(x, y);
+
+            maze[index] |= CELL_VISITED;
+            visited_cell++;
+        }
+    }
+
+    maze[get_index(start_x + 1, start_y)] |= CELL_PATH_N;
+    maze[get_index(start_x + 1, start_y)] |= CELL_PATH_S;
+    maze[get_index(start_x + 1, start_y + 2)] |= CELL_PATH_N;
+    maze[get_index(start_x + 1, start_y + 2)] |= CELL_PATH_N;
+    maze[get_index(start_x, start_y + 1)] |= CELL_PATH_E;
+    maze[get_index(start_x, start_y + 1)] |= CELL_PATH_W;
+    maze[get_index(start_x + 2, start_y + 1)] |= CELL_PATH_E;
+    maze[get_index(start_x + 2, start_y + 1)] |= CELL_PATH_W;
     
+    maze[get_index(start_x + 1, start_y + 1)] |= CELL_PATH_N;
+    maze[get_index(start_x + 1, start_y + 1)] |= CELL_PATH_S;
+    maze[get_index(start_x + 1, start_y + 1)] |= CELL_PATH_E;
+    maze[get_index(start_x + 1, start_y + 1)] |= CELL_PATH_W;
+    
+
+    /*
     for (int i = 0; i < 3; i++) {
         for (int j = 0; j < 3; j++) {
             //get coordinates of the cell in the box
@@ -116,12 +139,15 @@ void intialize_center_box(){
             maze[index] |= CELL_VISITED;
             visited_cell++;
             //removes wall inside box, creating an empty box
+            
             if (i > 0) maze[index] |= CELL_PATH_N;
             if (i < 2) maze[index] |= CELL_PATH_S;
             if (j > 0) maze[index] |= CELL_PATH_W;
             if (j < 2) maze[index] |= CELL_PATH_E;
+            
         }
     }
+    */
 }
 
 //Maze generating algorithm: DFS, recursive backtracking
@@ -209,6 +235,7 @@ void print_maze() {
             }
         }
 
+        /*
         //Clear internal walls inside the 3x3 box
         int startX = (MAZE_WIDTH / 2) * 2 - 1;
         int startY = (MAZE_HEIGHT / 2) * 2 - 1;
@@ -218,6 +245,8 @@ void print_maze() {
                 unfill(startY + i, startX + j);
             }
         }
+        */
+
 
 
     for (int i = 0; i < MAZE_HEIGHT; i++) { //by row
@@ -258,6 +287,10 @@ void print_maze() {
             if ((visual_maze[j][i] == '#') || ((visual_maze[j][i] == ' ') && (visual_maze[j-1][i] == '#') && (visual_maze[j+1][i])) || ((visual_maze[j][i] == ' ') && (visual_maze[j][i-1] == '#') && (visual_maze[j][i+1]))) { //j i flipped down here
                 printf("\033[1;31m");
                 printf("# ");
+                printf("\033[1;32m");
+           } else if ((i > ((MAZE_WIDTH*2)+1)/2 - 4) && (i < ((MAZE_WIDTH*2)+1)/2 + 4) && (j > ((MAZE_HEIGHT*2)+1)/2 - 4) && (j < ((MAZE_HEIGHT*2)+1)/2 + 4)) {
+                printf("\033[1;37m");
+                printf("%c ", visual_maze[j][i]);
                 printf("\033[1;32m");
             } else {
                 printf("%c ", visual_maze[j][i]);
@@ -457,7 +490,7 @@ void displayPaths(int length) {
  
 int main() {
     generate_maze();
-    printf("in main double check\n");
+    printf("in main single check\n");
     addEntranceToBox();
     addExits();
     print_maze();
