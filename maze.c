@@ -414,11 +414,12 @@ Cell* generate_graph() {
             exitLocations[exitsFound] = explorer;
             exitsFound++;
             printf("An exit found at x=%d, y=%d!\n", explorer->x, explorer->y);
+            explorer->cellVal -= 32;
             
             
         }
        
-            if ((explorer->cellVal & CELL_PATH_N) == CELL_PATH_N) {
+            if ((explorer->cellVal & CELL_PATH_N) == CELL_PATH_N && explorer->y != 0) {
                 if (added[explorer->x][explorer->y-1] == 0) {
                     printf("moving north\n");
                     //printf("at %d going to %d\n\n", maze[get_index(explorer->x, explorer->y)], maze[get_index(explorer->x, explorer->y-1)]);
@@ -432,15 +433,18 @@ Cell* generate_graph() {
                     continue;
                 } else if ((added[explorer->x][explorer->y-1] == 1) && (temp != explorer->upNeigh)) {
                     //make cycle link
+                    //printf("cycle set\n");
                     backtracker = explorer;
+                    printf("cycle head x=%d y=%d\n", explorer->x,explorer->y);
                     while ((backtracker->x != explorer->x) && (backtracker->y != explorer->y-1)) {
                         backtracker = backtrack(backtracker);
                     }
                     backtracker->downNeigh = explorer;
                     explorer->upNeigh = backtracker;
+                    //printf("cycle set N\n");
                     continue;
                 }
-            } if ((explorer->cellVal & CELL_PATH_S) == CELL_PATH_S) {
+            } if ((explorer->cellVal & CELL_PATH_S) == CELL_PATH_S && explorer->y != MAZE_HEIGHT-1) {
                 if (added[explorer->x][explorer->y+1] == 0) { 
                     printf("moving south\n");
                     //printf("at %d going to %d\n\n", maze[get_index(explorer->x, explorer->y)], maze[get_index(explorer->x, explorer->y+1)]);
@@ -454,14 +458,17 @@ Cell* generate_graph() {
                     continue;
                 } else if ((added[explorer->x][explorer->y+1] == 1) && (temp != explorer->downNeigh)) {
                     backtracker = explorer;
+                    printf("cycle head x=%d y=%d\n", explorer->x,explorer->y);
                     while ((backtracker->x != explorer->x) && (backtracker->y != explorer->y+1)) {
                         backtracker = backtrack(backtracker);
+                        printf("cycle body x=%d y=%d\n", backtracker->x,backtracker->y);
                     }
                     backtracker->upNeigh = explorer;
                     explorer->downNeigh = backtracker;
+                    //printf("cycle set S\n");
                     continue;
                 }
-            } if ((explorer->cellVal & CELL_PATH_W) == CELL_PATH_W) {
+            } if ((explorer->cellVal & CELL_PATH_W) == CELL_PATH_W && explorer->x != 0) {
                 if (added[explorer->x-1][explorer->y] == 0) { 
                     printf("moving west\n");
                     //printf("at %d going to %d\n\n", maze[get_index(explorer->x, explorer->y)], maze[get_index(explorer->x-1, explorer->y)]);
@@ -475,14 +482,17 @@ Cell* generate_graph() {
                     continue;
                 } else if ((added[explorer->x-1][explorer->y] == 1) && (temp != explorer->leftNeigh)) {
                     backtracker = explorer;
+                    printf("cycle head x=%d y=%d\n", explorer->x,explorer->y);
                     while ((backtracker->x != explorer->x-1) && (backtracker->y != explorer->y)) {
                         backtracker = backtrack(backtracker);
+                        printf("cycle body x=%d y=%d\n", backtracker->x,backtracker->y);
                     }
                     backtracker->rightNeigh = explorer;
                     explorer->leftNeigh = backtracker;
+                    //printf("cycle set W\n");
                     continue;
                 }
-            } if ((explorer->cellVal & CELL_PATH_E) == CELL_PATH_E) {
+            } if ((explorer->cellVal & CELL_PATH_E) == CELL_PATH_E && explorer->x != MAZE_WIDTH-1) {
                 if (added[explorer->x+1][explorer->y] == 0) {
                     printf("moving east\n");
                     //printf("at %d going to %d\n\n", maze[get_index(explorer->x, explorer->y)], maze[get_index(explorer->x+1, explorer->y)]);
@@ -496,11 +506,15 @@ Cell* generate_graph() {
                     continue;
                 } else if ((added[explorer->x+1][explorer->y] == 1) && (temp != explorer->rightNeigh)) {
                     backtracker = explorer;
+                    printf("cycle head x=%d y=%d\n", explorer->x,explorer->y);
                     while ((backtracker->x != explorer->x+1) && (backtracker->y != explorer->y)) {
                         backtracker = backtrack(backtracker);
+                        printf("cycle body x=%d y=%d\n", backtracker->x,backtracker->y);
                     }
                     backtracker->leftNeigh = explorer;
                     explorer->rightNeigh = backtracker;
+                    //printf("cycle set E\n");
+                   
                     continue;
                 }
             } else {
