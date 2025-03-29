@@ -422,7 +422,7 @@ Cell* generate_graph() {
             if ((explorer->cellVal & CELL_PATH_N) == CELL_PATH_N && explorer->y != 0) {
                 if (added[explorer->x][explorer->y-1] == 0) {
                     printf("moving north\n");
-                    //printf("at %d going to %d\n\n", maze[get_index(explorer->x, explorer->y)], maze[get_index(explorer->x, explorer->y-1)]);
+                    printf("at x=%d, y=%d!\n", explorer->x, explorer->y);
                     explorer->upNeigh = createCell(explorer->x, explorer->y-1);
                     if (explorer->upNeigh == NULL) continue; //in case of misallocation
                     (explorer->upNeigh)->originator = 2; //came from south
@@ -431,11 +431,11 @@ Cell* generate_graph() {
                     explorer->downNeigh = temp;
                     pushC(explorer);
                     continue;
-                } else if ((added[explorer->x][explorer->y-1] == 1) && (temp != explorer->upNeigh)) {
+                } else if ((added[explorer->x][explorer->y-1] == 1) && (explorer->upNeigh != NULL )) {
                     //make cycle link
-                    //printf("cycle set\n");
+                    printf("cycle set\n");
                     backtracker = explorer;
-                    printf("cycle head x=%d y=%d\n", explorer->x,explorer->y);
+                    //printf("cycle head x=%d y=%d\n", explorer->x,explorer->y);
                     while ((backtracker->x != explorer->x) && (backtracker->y != explorer->y-1)) {
                         backtracker = backtrack(backtracker);
                         printf("cycle body x=%d y=%d\n", backtracker->x,backtracker->y);
@@ -448,7 +448,7 @@ Cell* generate_graph() {
             } if ((explorer->cellVal & CELL_PATH_S) == CELL_PATH_S && explorer->y != MAZE_HEIGHT-1) {
                 if (added[explorer->x][explorer->y+1] == 0) { 
                     printf("moving south\n");
-                    //printf("at %d going to %d\n\n", maze[get_index(explorer->x, explorer->y)], maze[get_index(explorer->x, explorer->y+1)]);
+                    printf("at x=%d, y=%d!\n", explorer->x, explorer->y);
                     explorer->downNeigh = createCell(explorer->x, explorer->y+1);
                     if (explorer->downNeigh == NULL) continue; //in case of misallocation
                     (explorer->downNeigh)->originator = 1; //came from north
@@ -457,9 +457,10 @@ Cell* generate_graph() {
                     explorer->upNeigh = temp;
                     pushC(explorer);
                     continue;
-                } else if ((added[explorer->x][explorer->y+1] == 1) && (temp != explorer->downNeigh)) {
+                } else if ((added[explorer->x][explorer->y+1] == 1) && explorer->downNeigh!= NULL) {
+                    printf("cycle set\n");
                     backtracker = explorer;
-                    printf("cycle head x=%d y=%d\n", explorer->x,explorer->y);
+                    //printf("cycle head x=%d y=%d\n", explorer->x,explorer->y);
                     while ((backtracker->x != explorer->x) && (backtracker->y != explorer->y+1)) {
                         backtracker = backtrack(backtracker);
                         printf("cycle body x=%d y=%d\n", backtracker->x,backtracker->y);
@@ -472,7 +473,7 @@ Cell* generate_graph() {
             } if ((explorer->cellVal & CELL_PATH_W) == CELL_PATH_W && explorer->x != 0) {
                 if (added[explorer->x-1][explorer->y] == 0) { 
                     printf("moving west\n");
-                    //printf("at %d going to %d\n\n", maze[get_index(explorer->x, explorer->y)], maze[get_index(explorer->x-1, explorer->y)]);
+                    printf("at x=%d, y=%d!\n", explorer->x, explorer->y);
                     explorer->leftNeigh = createCell(explorer->x-1, explorer->y);
                     if (explorer->leftNeigh == NULL) continue; //in case of misallocation
                     (explorer->leftNeigh)->originator = 4; //came from east
@@ -481,9 +482,10 @@ Cell* generate_graph() {
                     explorer->rightNeigh = temp;
                     pushC(explorer);
                     continue;
-                } else if ((added[explorer->x-1][explorer->y] == 1) && (temp != explorer->leftNeigh)) {
+                } else if ((added[explorer->x-1][explorer->y] == 1) && (explorer->leftNeigh != NULL)) {
+                    printf("cycle set\n");
                     backtracker = explorer;
-                    printf("cycle head x=%d y=%d\n", explorer->x,explorer->y);
+                    //printf("cycle head x=%d y=%d\n", explorer->x,explorer->y);
                     while ((backtracker->x != explorer->x-1) && (backtracker->y != explorer->y)) {
                         backtracker = backtrack(backtracker);
                         printf("cycle body x=%d y=%d\n", backtracker->x,backtracker->y);
@@ -496,7 +498,7 @@ Cell* generate_graph() {
             } if ((explorer->cellVal & CELL_PATH_E) == CELL_PATH_E && explorer->x != MAZE_WIDTH-1) {
                 if (added[explorer->x+1][explorer->y] == 0) {
                     printf("moving east\n");
-                    //printf("at %d going to %d\n\n", maze[get_index(explorer->x, explorer->y)], maze[get_index(explorer->x+1, explorer->y)]);
+                    printf("at x=%d, y=%d!\n", explorer->x, explorer->y);
                     explorer->rightNeigh = createCell(explorer->x+1, explorer->y);
                     if (explorer->rightNeigh == NULL) continue; //in case of misallocation
                     (explorer->rightNeigh)->originator = 3; //came from west
@@ -505,9 +507,10 @@ Cell* generate_graph() {
                     explorer->leftNeigh = temp;
                     pushC(explorer);
                     continue;
-                } else if ((added[explorer->x+1][explorer->y] == 1) && (temp != explorer->rightNeigh)) {
+                } else if ((added[explorer->x+1][explorer->y] == 1) && (explorer->rightNeigh != NULL)) {
+                    printf("cycle set\n");
                     backtracker = explorer;
-                    printf("cycle head x=%d y=%d\n", explorer->x,explorer->y);
+                    //printf("cycle head x=%d y=%d\n", explorer->x,explorer->y);
                     while ((backtracker->x != explorer->x+1) && (backtracker->y != explorer->y)) {
                         backtracker = backtrack(backtracker);
                         printf("cycle body x=%d y=%d\n", backtracker->x,backtracker->y);
@@ -520,7 +523,6 @@ Cell* generate_graph() {
                 }
             } else {
                 printf("Reached dead end or Full maze explored!\n");
-                temp=explorer;
                 explorer = popC();
             }
         }  
