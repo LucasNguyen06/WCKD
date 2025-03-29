@@ -370,14 +370,38 @@ Cell* createCell(int x, int y) {
     return newCell;
 }
 
-void solve_maze() {
+//function for moving backwards one step
+Cell* backtrack(Cell* location) {
+    switch (location->originator) {
+        case 1:              
+            location = location->upNeigh;
+            break;
+        case 2:
+            location = location->downNeigh;
+            break;
+        case 3: 
+            location = location->leftNeigh;
+            break;
+        case 4:
+            location = location->rightNeigh;
+            break;
+        default:
+            printf("backtrack error\n"); 
+            break;
+    }
+    return location;
+}
+
+//function will move through the entire maze, allowing for cycles, and keep track of exit coordinates (but won't stop when it finds them)
+void generate_graph() {
     Cell* center = createCell((MAZE_WIDTH/2), (MAZE_HEIGHT/2));
     Cell* explorer = center;
     Cell* temp; //for parent storing thing
+    Cell* backtracker; //for backtracking in cycles
   
     pushC(center);
 
-    while ((exitsFound < 4) && (stackC_size > 0)) { //
+    while (stackC_size > 0) { //
         //printf("looping\n");
         if ((explorer->cellVal & CELL_EXIT) == CELL_EXIT) {
             //if exit found
@@ -386,53 +410,85 @@ void solve_maze() {
             exits[1][exitsFound]= explorer->y;
             exitsFound++;
             printf("An exit found at x=%d, y=%d!\n", explorer->x, explorer->y);
-            maze[get_index(explorer->x,explorer->y)] -= 32;
-           
-            explorer = center;
-            memset(added,0,sizeof(added));
-
 
         } else {
-            if (((explorer->cellVal & CELL_PATH_N) == CELL_PATH_N) && (added[explorer->x][explorer->y-1] == 0)) {
-                //printf("moving north\n");
-                //printf("at %d going to %d\n\n", maze[get_index(explorer->x, explorer->y)], maze[get_index(explorer->x, explorer->y-1)]);
-                explorer->upNeigh = createCell(explorer->x, explorer->y-1);
-                if (explorer->upNeigh == NULL) continue; //in case of the cycle error (redundant)
-                (explorer->upNeigh)->originator = 2; //came from south
-                temp = explorer;
-                explorer = explorer->upNeigh;
-                explorer->downNeigh = temp;
-                pushC(explorer);
-            } else if (((explorer->cellVal & CELL_PATH_S) == CELL_PATH_S) && (added[explorer->x][explorer->y+1] == 0)) {
-                //printf("moving south\n");
-                //printf("at %d going to %d\n\n", maze[get_index(explorer->x, explorer->y)], maze[get_index(explorer->x, explorer->y+1)]);
-                explorer->downNeigh = createCell(explorer->x, explorer->y+1);
-                if (explorer->downNeigh == NULL) continue; //in case of the cycle error
-                (explorer->downNeigh)->originator = 1; //came from north
-                temp = explorer;
-                explorer = explorer->downNeigh;
-                explorer->upNeigh = temp;
-                pushC(explorer);
-            } else if (((explorer->cellVal & CELL_PATH_W) == CELL_PATH_W) && (added[explorer->x-1][explorer->y] == 0)) {
-                //printf("moving west\n");
-                //printf("at %d going to %d\n\n", maze[get_index(explorer->x, explorer->y)], maze[get_index(explorer->x-1, explorer->y)]);
-                explorer->leftNeigh = createCell(explorer->x-1, explorer->y);
-                if (explorer->leftNeigh == NULL) continue; //in case of the cycle error
-                (explorer->leftNeigh)->originator = 4; //came from east
-                temp = explorer;
-                explorer = explorer->leftNeigh;
-                explorer->rightNeigh = temp;
-                pushC(explorer);
-            } else if (((explorer->cellVal & CELL_PATH_E) == CELL_PATH_E) && (added[explorer->x+1][explorer->y] == 0)) {
-                //printf("moving east\n");
-                //printf("at %d going to %d\n\n", maze[get_index(explorer->x, explorer->y)], maze[get_index(explorer->x+1, explorer->y)]);
-                explorer->rightNeigh = createCell(explorer->x+1, explorer->y);
-                if (explorer->rightNeigh == NULL) continue; //in case of the cycle error
-                (explorer->rightNeigh)->originator = 3; //came from west
-                temp = explorer;
-                explorer = explorer->rightNeigh;
-                explorer->leftNeigh = temp;
-                pushC(explorer);
+            if ((explorer->cellVal & CELL_PATH_N) == CELL_PATH_N) {
+                if (added[explorer->x][explorer->y-1] == 0) {
+                    //printf("moving north\n");
+                    //printf("at %d going to %d\n\n", maze[get_index(explorer->x, explorer->y)], maze[get_index(explorer->x, explorer->y-1)]);
+                    explorer->upNeigh = createCell(explorer->x, explorer->y-1);
+                    if (explorer->upNeigh == NULL) continue; //in case of misallocation
+                    (explorer->upNeigh)->originator = 2; //came from south
+                    temp = explorer;
+                    explorer = explorer->upNeigh;
+                    explorer->downNeigh = temp;
+                    pushC(explorer);
+                } else if (added[explorer->x][explorer->y-1] == 1) {
+                    //make cycle link
+                    backtracker = explorer;
+                    while ((backtracker->x != explorer->x) && (backtracker->y != explorer->y-1)) {
+                        backtracker = backtrack(backtracker);
+                    }
+                    backtracker->downNeigh = explorer;
+                    explorer->upNeigh = backtracker;
+                }
+            } else if ((explorer->cellVal & CELL_PATH_S) == CELL_PATH_S) {
+                if (added[explorer->x][explorer->y+1] == 0) { 
+                    //printf("moving south\n");
+                    //printf("at %d going to %d\n\n", maze[get_index(explorer->x, explorer->y)], maze[get_index(explorer->x, explorer->y+1)]);
+                    explorer->downNeigh = createCell(explorer->x, explorer->y+1);
+                    if (explorer->downNeigh == NULL) continue; //in case of misallocation
+                    (explorer->downNeigh)->originator = 1; //came from north
+                    temp = explorer;
+                    explorer = explorer->downNeigh;
+                    explorer->upNeigh = temp;
+                    pushC(explorer);
+                } else if (added[explorer->x][explorer->y+1] == 1) {
+                    backtracker = explorer;
+                    while ((backtracker->x != explorer->x) && (backtracker->y != explorer->y+1)) {
+                        backtracker = backtrack(backtracker);
+                    }
+                    backtracker->upNeigh = explorer;
+                    explorer->downNeigh = backtracker;
+                }
+            } else if ((explorer->cellVal & CELL_PATH_W) == CELL_PATH_W) {
+                if (added[explorer->x-1][explorer->y] == 0) { 
+                    //printf("moving west\n");
+                    //printf("at %d going to %d\n\n", maze[get_index(explorer->x, explorer->y)], maze[get_index(explorer->x-1, explorer->y)]);
+                    explorer->leftNeigh = createCell(explorer->x-1, explorer->y);
+                    if (explorer->leftNeigh == NULL) continue; //in case of misallocation
+                    (explorer->leftNeigh)->originator = 4; //came from east
+                    temp = explorer;
+                    explorer = explorer->leftNeigh;
+                    explorer->rightNeigh = temp;
+                    pushC(explorer);
+                } else if (added[explorer->x-1][explorer->y] == 1) {
+                    backtracker = explorer;
+                    while ((backtracker->x != explorer->x-1) && (backtracker->y != explorer->y)) {
+                        backtracker = backtrack(backtracker);
+                    }
+                    backtracker->rightNeigh = explorer;
+                    explorer->leftNeigh = backtracker;
+                }
+            } else if ((explorer->cellVal & CELL_PATH_E) == CELL_PATH_E) {
+                if (added[explorer->x+1][explorer->y] == 0) {
+                    //printf("moving east\n");
+                    //printf("at %d going to %d\n\n", maze[get_index(explorer->x, explorer->y)], maze[get_index(explorer->x+1, explorer->y)]);
+                    explorer->rightNeigh = createCell(explorer->x+1, explorer->y);
+                    if (explorer->rightNeigh == NULL) continue; //in case of misallocation
+                    (explorer->rightNeigh)->originator = 3; //came from west
+                    temp = explorer;
+                    explorer = explorer->rightNeigh;
+                    explorer->leftNeigh = temp;
+                    pushC(explorer);
+                } else if (added[explorer->x+1][explorer->y] == 1) {
+                    backtracker = explorer;
+                    while ((backtracker->x != explorer->x+1) && (backtracker->y != explorer->y)) {
+                        backtracker = backtrack(backtracker);
+                    }
+                    backtracker->leftNeigh = explorer;
+                    explorer->rightNeigh = backtracker;
+                }
             } else {
                 //printf("Reached dead end or Full maze explored!\n");
                 explorer = popC();
@@ -442,6 +498,12 @@ void solve_maze() {
     printf("Maze solved!\n");
 }
 
+//function will run djistra's on the graph given the graph and the destination 
+void djikstra() {
+
+}
+
+//function will run djiskstra's four times and determine which path is the shortest. This path will be passed into the display path functoin
 int findPaths() {
     int cellNum, pathL = 99999;
 
@@ -451,23 +513,7 @@ int findPaths() {
         do{  //loop till reaches the middle
             paths[i][0][cellNum] = current->x;
             paths[i][1][cellNum] = current->y;
-            switch (current->originator) {
-                case 1:              
-                    current = current->upNeigh;
-                    break;
-                case 2:
-                    current = current->downNeigh;
-                    break;
-                case 3: 
-                    current = current->leftNeigh;
-                    break;
-                case 4:
-                    current = current->rightNeigh;
-                    break;
-                default:
-                    printf("colour error or end\n"); 
-                    break;
-            }
+            current = backtrack(current);
             cellNum++;
         } while (current->originator != 0);
         paths[i][0][cellNum] = MAZE_WIDTH/2; //make sure origin gets included
@@ -497,11 +543,11 @@ int main() {
     addEntranceToBox();
     addExits();
     print_maze();
-    solve_maze();
-    printf("Num exits: %d\n", exitsFound);
-    int pathL = findPaths();
-    displayPaths(pathL);
-    print_maze();
+    generate_graph();
+    //printf("Num exits: %d\n", exitsFound);
+    //int pathL = findPaths();
+    //displayPaths(pathL);
+    //print_maze();
 }
 /*
 int main(int argc, char *argv[]) {
