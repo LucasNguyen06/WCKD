@@ -6,9 +6,10 @@
 //#include <gtk/gtk.h>
 
 //Define the size of the maze, can be change
-#define MAZE_WIDTH 31// DO ODD
-#define MAZE_HEIGHT 31 //DO ODD
+#define MAZE_WIDTH 11 // DO ODD
+#define MAZE_HEIGHT 11 //DO ODD
 #define CELL_SIZE 20 //Cell size 20x20 pixels in GTK window
+#define INF 999999;
 
 //Paths: North, South, East, and West
 //Using hexidecimal as bit flag
@@ -36,6 +37,9 @@ typedef struct cell{
     struct cell* leftNeigh; //neightbor 3
     struct cell* rightNeigh; //neighbor 4
     int originator; //0 if start (center)
+    int distance;
+    bool visited;
+    struct cell* previous;
 }Cell;
 
 //array to store cells current state(i.e visited?)
@@ -62,8 +66,6 @@ int shortestE = 0;
 int exitsFound = 0;
 //declare visual maze of be displayed
 char visual_maze[(MAZE_HEIGHT*2)+1][(MAZE_WIDTH*2)+1];
-
-int exits [2][4];
 
 //Check if stack is empty, then return 0
 bool isEmpty(){
@@ -297,8 +299,9 @@ void print_maze() {
             }
         }
     printf("\n");
-    }   
+    }
     printf("\033[0m ");
+    
 }
 
 //Add entrance function to the 3x3 box. Will add entrance on each side of the box, in the middle
@@ -366,6 +369,9 @@ Cell* createCell(int x, int y) {
     newCell->leftNeigh = NULL;
     newCell->rightNeigh = NULL;
     newCell->originator = 0;
+    newCell->distance = INF;
+    newCell->visited = false;
+    newCell->previous = NULL;
     added[x][y] = 1;
     return newCell;
 }
@@ -393,28 +399,27 @@ Cell* backtrack(Cell* location) {
 }
 
 //function will move through the entire maze, allowing for cycles, and keep track of exit coordinates (but won't stop when it finds them)
-void generate_graph() {
+Cell* generate_graph() {
     Cell* center = createCell((MAZE_WIDTH/2), (MAZE_HEIGHT/2));
     Cell* explorer = center;
-    Cell* temp; //for parent storing thing
+    Cell* temp; //for parent storing cell that you just came from
     Cell* backtracker; //for backtracking in cycles
-  
+    printf("started graphging\n");
     pushC(center);
-
     while (stackC_size > 0) { //
-        //printf("looping\n");
+        
+        printf("looping\n");
         if ((explorer->cellVal & CELL_EXIT) == CELL_EXIT) {
             //if exit found
             exitLocations[exitsFound] = explorer;
-            exits[0][exitsFound]= explorer->x;
-            exits[1][exitsFound]= explorer->y;
             exitsFound++;
             printf("An exit found at x=%d, y=%d!\n", explorer->x, explorer->y);
 
         } else {
+                printf("in else\n");
             if ((explorer->cellVal & CELL_PATH_N) == CELL_PATH_N) {
                 if (added[explorer->x][explorer->y-1] == 0) {
-                    //printf("moving north\n");
+                    printf("moving north\n");
                     //printf("at %d going to %d\n\n", maze[get_index(explorer->x, explorer->y)], maze[get_index(explorer->x, explorer->y-1)]);
                     explorer->upNeigh = createCell(explorer->x, explorer->y-1);
                     if (explorer->upNeigh == NULL) continue; //in case of misallocation
@@ -423,7 +428,8 @@ void generate_graph() {
                     explorer = explorer->upNeigh;
                     explorer->downNeigh = temp;
                     pushC(explorer);
-                } else if (added[explorer->x][explorer->y-1] == 1) {
+                    continue;
+                } else if ((added[explorer->x][explorer->y-1] == 1) && (temp != explorer->upNeigh)) {
                     //make cycle link
                     backtracker = explorer;
                     while ((backtracker->x != explorer->x) && (backtracker->y != explorer->y-1)) {
@@ -431,10 +437,11 @@ void generate_graph() {
                     }
                     backtracker->downNeigh = explorer;
                     explorer->upNeigh = backtracker;
+                    continue;
                 }
-            } else if ((explorer->cellVal & CELL_PATH_S) == CELL_PATH_S) {
+            } if ((explorer->cellVal & CELL_PATH_S) == CELL_PATH_S) {
                 if (added[explorer->x][explorer->y+1] == 0) { 
-                    //printf("moving south\n");
+                    printf("moving south\n");
                     //printf("at %d going to %d\n\n", maze[get_index(explorer->x, explorer->y)], maze[get_index(explorer->x, explorer->y+1)]);
                     explorer->downNeigh = createCell(explorer->x, explorer->y+1);
                     if (explorer->downNeigh == NULL) continue; //in case of misallocation
@@ -443,17 +450,19 @@ void generate_graph() {
                     explorer = explorer->downNeigh;
                     explorer->upNeigh = temp;
                     pushC(explorer);
-                } else if (added[explorer->x][explorer->y+1] == 1) {
+                    continue;
+                } else if ((added[explorer->x][explorer->y+1] == 1) && (temp != explorer->downNeigh)) {
                     backtracker = explorer;
                     while ((backtracker->x != explorer->x) && (backtracker->y != explorer->y+1)) {
                         backtracker = backtrack(backtracker);
                     }
                     backtracker->upNeigh = explorer;
                     explorer->downNeigh = backtracker;
+                    continue;
                 }
-            } else if ((explorer->cellVal & CELL_PATH_W) == CELL_PATH_W) {
+            } if ((explorer->cellVal & CELL_PATH_W) == CELL_PATH_W) {
                 if (added[explorer->x-1][explorer->y] == 0) { 
-                    //printf("moving west\n");
+                    printf("moving west\n");
                     //printf("at %d going to %d\n\n", maze[get_index(explorer->x, explorer->y)], maze[get_index(explorer->x-1, explorer->y)]);
                     explorer->leftNeigh = createCell(explorer->x-1, explorer->y);
                     if (explorer->leftNeigh == NULL) continue; //in case of misallocation
@@ -462,17 +471,19 @@ void generate_graph() {
                     explorer = explorer->leftNeigh;
                     explorer->rightNeigh = temp;
                     pushC(explorer);
-                } else if (added[explorer->x-1][explorer->y] == 1) {
+                    continue;
+                } else if ((added[explorer->x-1][explorer->y] == 1) && (temp != explorer->leftNeigh)) {
                     backtracker = explorer;
                     while ((backtracker->x != explorer->x-1) && (backtracker->y != explorer->y)) {
                         backtracker = backtrack(backtracker);
                     }
                     backtracker->rightNeigh = explorer;
                     explorer->leftNeigh = backtracker;
+                    continue;
                 }
-            } else if ((explorer->cellVal & CELL_PATH_E) == CELL_PATH_E) {
+            } if ((explorer->cellVal & CELL_PATH_E) == CELL_PATH_E) {
                 if (added[explorer->x+1][explorer->y] == 0) {
-                    //printf("moving east\n");
+                    printf("moving east\n");
                     //printf("at %d going to %d\n\n", maze[get_index(explorer->x, explorer->y)], maze[get_index(explorer->x+1, explorer->y)]);
                     explorer->rightNeigh = createCell(explorer->x+1, explorer->y);
                     if (explorer->rightNeigh == NULL) continue; //in case of misallocation
@@ -481,31 +492,131 @@ void generate_graph() {
                     explorer = explorer->rightNeigh;
                     explorer->leftNeigh = temp;
                     pushC(explorer);
-                } else if (added[explorer->x+1][explorer->y] == 1) {
+                    continue;
+                } else if ((added[explorer->x+1][explorer->y] == 1) && (temp != explorer->rightNeigh)) {
                     backtracker = explorer;
                     while ((backtracker->x != explorer->x+1) && (backtracker->y != explorer->y)) {
                         backtracker = backtrack(backtracker);
                     }
                     backtracker->leftNeigh = explorer;
                     explorer->rightNeigh = backtracker;
+                    continue;
                 }
             } else {
-                //printf("Reached dead end or Full maze explored!\n");
+                printf("Reached dead end or Full maze explored!\n");
                 explorer = popC();
             }
         }  
     }
     printf("Maze solved!\n");
+    return center;
 }
 
-//function will run djistra's on the graph given the graph and the destination 
-void djikstra() {
+//function will run dijkstra's on the graph given the graph and the destination 
+void dijkstra(Cell* center) {
+    Cell* moving = center;
+    center->distance = 0;
+    //variables for where to go next
+    
+    for (int i = 0; i < (MAZE_HEIGHT*MAZE_WIDTH); i++) { //number of passes THINK
+        int smallestD = INF;
+        Cell* nearest = NULL;
+        moving->visited = true;
+        //check all four neighbours
+        if ((moving->cellVal & CELL_PATH_N) == CELL_PATH_N) {
+            if ((moving->upNeigh)->visited == false) {
+                if ((moving->upNeigh)->previous != NULL) {
+                    if ((moving->distance) + 1 < ((moving->upNeigh)->previous)->distance) {
+                        (moving->upNeigh)->distance = (moving->distance) + 1;
+                        (moving->upNeigh)->previous = moving;
+                        if ((moving->upNeigh)->distance < smallestD) {
+                            smallestD = (moving->upNeigh)->distance;
+                            nearest = moving->upNeigh;
+                        }
+                    } else if ((moving->upNeigh)->previous == NULL) {
+                        (moving->upNeigh)->distance = (moving->distance) + 1;
+                        (moving->upNeigh)->previous = moving;
+                        if ((moving->upNeigh)->distance < smallestD) {
+                            smallestD = (moving->upNeigh)->distance;
+                            nearest = moving->upNeigh;
+                        }
+                    }
+                }
+            }
+        }
+        if ((moving->cellVal & CELL_PATH_S) == CELL_PATH_S) {
+            if ((moving->downNeigh)->visited == false) {
+                if ((moving->downNeigh)->previous != NULL) {
+                    if ((moving->distance) + 1 < ((moving->downNeigh)->previous)->distance) {
+                        (moving->downNeigh)->distance = (moving->distance) + 1;
+                        (moving->downNeigh)->previous = moving;
+                        if ((moving->downNeigh)->distance < smallestD) {
+                            smallestD = (moving->downNeigh)->distance;
+                            nearest = moving->downNeigh;
+                        }
+                    } else if ((moving->downNeigh)->previous == NULL) {
+                        (moving->downNeigh)->distance = (moving->distance) + 1;
+                        (moving->downNeigh)->previous = moving;
+                        if ((moving->downNeigh)->distance < smallestD) {
+                            smallestD = (moving->downNeigh)->distance;
+                            nearest = moving->downNeigh;
+                        }
+                    }
+                }
+            }
+        }
+        if ((moving->cellVal & CELL_PATH_W) == CELL_PATH_W) {
+            if ((moving->leftNeigh)->visited == false) {
+                if ((moving->leftNeigh)->previous != NULL) {
+                    if ((moving->distance) + 1 < ((moving->leftNeigh)->previous)->distance) {
+                        (moving->leftNeigh)->distance = (moving->distance) + 1;
+                        (moving->leftNeigh)->previous = moving;
+                        if ((moving->leftNeigh)->distance < smallestD) {
+                            smallestD = (moving->leftNeigh)->distance;
+                            nearest = moving->leftNeigh;
+                        }
+                    } else if ((moving->leftNeigh)->previous == NULL) {
+                        (moving->leftNeigh)->distance = (moving->distance) + 1;
+                        (moving->leftNeigh)->previous = moving;
+                        if ((moving->leftNeigh)->distance < smallestD) {
+                            smallestD = (moving->leftNeigh)->distance;
+                            nearest = moving->leftNeigh;
+                        }
+                    }
+                }
+            }
+        }
+        if ((moving->cellVal & CELL_PATH_E) == CELL_PATH_E) {
+            if ((moving->rightNeigh)->visited == false) {
+                if ((moving->rightNeigh)->previous != NULL) {
+                    if ((moving->distance) + 1 < ((moving->rightNeigh)->previous)->distance) {
+                        (moving->rightNeigh)->distance = (moving->distance) + 1;
+                        (moving->rightNeigh)->previous = moving;
+                        if ((moving->rightNeigh)->distance < smallestD) {
+                            smallestD = (moving->rightNeigh)->distance;
+                            nearest = moving->rightNeigh;
+                        }
+                    } else if ((moving->rightNeigh)->previous == NULL) {
+                        (moving->rightNeigh)->distance = (moving->distance) + 1;
+                        (moving->rightNeigh)->previous = moving;
+                        if ((moving->rightNeigh)->distance < smallestD) {
+                            smallestD = (moving->rightNeigh)->distance;
+                            nearest = moving->rightNeigh;
+                        }
+                    }
+                }
+            }
+        }
+        
+        moving = nearest;
+    }
+
 
 }
 
-//function will run djiskstra's four times and determine which path is the shortest. This path will be passed into the display path functoin
+//function will run dijskstra's four times and determine which path is the shortest. This path will be passed into the display path functoin
 int findPaths() {
-    int cellNum, pathL = 99999;
+    int cellNum, pathL = INF;
 
     for (int i = 0; i < exitsFound; i++) {
         Cell* current = exitLocations[i]; //start at the exit
@@ -513,9 +624,9 @@ int findPaths() {
         do{  //loop till reaches the middle
             paths[i][0][cellNum] = current->x;
             paths[i][1][cellNum] = current->y;
-            current = backtrack(current);
             cellNum++;
-        } while (current->originator != 0);
+            current = current->previous;
+        } while (current->distance != 0);
         paths[i][0][cellNum] = MAZE_WIDTH/2; //make sure origin gets included
         paths[i][1][cellNum] = MAZE_HEIGHT/2;
 
@@ -543,30 +654,11 @@ int main() {
     addEntranceToBox();
     addExits();
     print_maze();
-    generate_graph();
-    //printf("Num exits: %d\n", exitsFound);
-    //int pathL = findPaths();
-    //displayPaths(pathL);
-    //print_maze();
+    printf("finished printing\n");
+    Cell* center = generate_graph();
+    printf("Num exits: %d\n", exitsFound);
+    dijkstra(center);
+    int pathL = findPaths();
+    displayPaths(pathL);
+    print_maze();
 }
-/*
-int main(int argc, char *argv[]) {
-    gtk_init(&argc, &argv);
-    generate_maze();
-   
-    GtkWidget *window = gtk_window_new();
-    gtk_window_set_title(GTK_WINDOW(window), "Maze Generator");
-    gtk_window_set_default_size(GTK_WINDOW(window), MAZE_WIDTH * CELL_SIZE, MAZE_HEIGHT * CELL_SIZE);
-   
-    GtkWidget *drawing_area = gtk_drawing_area_new();
-    gtk_drawing_area_set_draw_func(GTK_DRAWING_AREA(drawing_area), draw_maze, NULL, NULL);
-   
-    gtk_window_set_child(GTK_WINDOW(window), drawing_area);
-    gtk_widget_show(window);
-   
-    g_signal_connect(window, "destroy", G_CALLBACK(gtk_main_quit), NULL);
-    gtk_main();
-   
-    return 0;
-}
-    */
