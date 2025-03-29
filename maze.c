@@ -438,6 +438,7 @@ Cell* generate_graph() {
                     printf("cycle head x=%d y=%d\n", explorer->x,explorer->y);
                     while ((backtracker->x != explorer->x) && (backtracker->y != explorer->y-1)) {
                         backtracker = backtrack(backtracker);
+                        printf("cycle body x=%d y=%d\n", backtracker->x,backtracker->y);
                     }
                     backtracker->downNeigh = explorer;
                     explorer->upNeigh = backtracker;
@@ -519,6 +520,7 @@ Cell* generate_graph() {
                 }
             } else {
                 printf("Reached dead end or Full maze explored!\n");
+                temp=explorer;
                 explorer = popC();
             }
         }  
