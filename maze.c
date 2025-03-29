@@ -408,15 +408,16 @@ Cell* generate_graph() {
     pushC(center);
     while (stackC_size > 0) { //
         
-        printf("looping\n");
+        //printf("looping\n");
         if ((explorer->cellVal & CELL_EXIT) == CELL_EXIT) {
             //if exit found
             exitLocations[exitsFound] = explorer;
             exitsFound++;
             printf("An exit found at x=%d, y=%d!\n", explorer->x, explorer->y);
-
-        } else {
-                printf("in else\n");
+            
+            
+        }
+       
             if ((explorer->cellVal & CELL_PATH_N) == CELL_PATH_N) {
                 if (added[explorer->x][explorer->y-1] == 0) {
                     printf("moving north\n");
@@ -507,10 +508,11 @@ Cell* generate_graph() {
                 explorer = popC();
             }
         }  
-    }
+    
     printf("Maze solved!\n");
     return center;
 }
+
 
 //function will run dijkstra's on the graph given the graph and the destination 
 void dijkstra(Cell* center) {
@@ -657,8 +659,8 @@ int main() {
     printf("finished printing\n");
     Cell* center = generate_graph();
     printf("Num exits: %d\n", exitsFound);
-    dijkstra(center);
-    int pathL = findPaths();
-    displayPaths(pathL);
-    print_maze();
+    //dijkstra(center);
+    //int pathL = findPaths();
+    //displayPaths(pathL);
+    //print_maze();
 }
