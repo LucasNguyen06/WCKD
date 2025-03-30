@@ -375,129 +375,52 @@ Cell* createCell(int x, int y) {
 }
 
 //function will move through the entire maze, allowing for cycles, and keep track of exit coordinates (but won't stop when it finds them)
-Cell* generate_graph() {
-    Cell* center = createCell((MAZE_WIDTH/2), (MAZE_HEIGHT/2));
-    graph[MAZE_WIDTH/2][MAZE_HEIGHT/2] = center;
-    Cell* explorer = center;
+void generate_graph() {
     printf("started graphing\n");
-    pushC(center);
-    while (stackC_size > 0) { //
-        
-        //printf("looping\n");
-        if ((explorer->cellVal & CELL_EXIT) == CELL_EXIT) {
-            //if exit found
-            exitLocations[exitsFound] = explorer;
-            exitsFound++;
-            printf("An exit found at x=%d, y=%d!\n", explorer->x, explorer->y);
-            explorer->cellVal -= 32;  
+
+    for (int i = 0; i < MAZE_HEIGHT; i++) { //down rows
+        for (int j = 0; j < MAZE_WIDTH; j++) { //across columns
+            Cell* current = createCell(i, j);
+            graph[i][j] = current;
         }
-       
-            if (((explorer->cellVal & CELL_PATH_N) == CELL_PATH_N) && (explorer->y != 0)) {
-                printf("at x=%d, y=%d\n", explorer->x, explorer->y);
-                if (graph[explorer->x][explorer->y-1] == NULL) {
-                    printf("moving north\n");
-                    explorer->upNeigh = createCell(explorer->x, explorer->y-1);
-                    if (explorer->upNeigh == NULL) continue; //in case of misallocation
-                    graph[explorer->x][explorer->y-1] = explorer->upNeigh;
-                    (explorer->upNeigh)->originator = 2; //came from south
-                    explorer = explorer->upNeigh;
-                    explorer->downNeigh = graph[explorer->x][explorer->y+1];
-                    pushC(explorer);
-                    continue;
-                } else if ((graph[explorer->x][explorer->y-1] != NULL) && (explorer->upNeigh == NULL )) { //check if there is a cell in the open space above and that there isn't a link between the two
-                    printf("cycle set\n");
-                    explorer->upNeigh = graph[explorer->x][explorer->y-1];
-                    (graph[explorer->x][explorer->y-1])->downNeigh = explorer;
-                    //printf("cycle set N\n");
-                    //explorer = popC();
-                    continue;
-                } else {
-                    printf("cell above but already connected\n");
-                }
-            } else if (((explorer->cellVal & CELL_PATH_S) == CELL_PATH_S) && (explorer->y != MAZE_HEIGHT-1)) {
-                printf("at x=%d, y=%d\n", explorer->x, explorer->y);
-                if (graph[explorer->x][explorer->y+1] == NULL) { 
-                    printf("moving south\n");
-                    explorer->downNeigh = createCell(explorer->x, explorer->y+1);
-                    if (explorer->downNeigh == NULL) continue; //in case of misallocation
-                    graph[explorer->x][explorer->y+1] = explorer->downNeigh;
-                    (explorer->downNeigh)->originator = 1; //came from north
-                    explorer = explorer->downNeigh;
-                    explorer->upNeigh = graph[explorer->x][explorer->y-1];
-                    pushC(explorer);
-                    continue;
-                } else if ((graph[explorer->x][explorer->y+1] != NULL) && (explorer->downNeigh == NULL)) {
-                    printf("cycle set\n");
-                    explorer->downNeigh = graph[explorer->x][explorer->y+1];
-                    (graph[explorer->x][explorer->y+1])->upNeigh = explorer;
-                    //printf("cycle set N\n");
-                    //explorer = popC();
-                    continue;
-                } else {
-                    printf("cell below but already connected\n");
-                }
-            } else if (((explorer->cellVal & CELL_PATH_W) == CELL_PATH_W) && (explorer->x != 0)) {
-                printf("at x=%d, y=%d\n", explorer->x, explorer->y);
-                if (graph[explorer->x-1][explorer->y] == NULL) { 
-                    printf("moving west\n");
-                    explorer->leftNeigh = createCell(explorer->x-1, explorer->y);
-                    if (explorer->leftNeigh == NULL) continue; //in case of misallocation
-                    graph[explorer->x-1][explorer->y] = explorer->leftNeigh;
-                    (explorer->leftNeigh)->originator = 4; //came from east
-                    explorer = explorer->leftNeigh;
-                    explorer->rightNeigh = graph[explorer->x+1][explorer->y];
-                    pushC(explorer);
-                    continue;
-                } else if ((graph[explorer->x-1][explorer->y] != NULL) && (explorer->leftNeigh == NULL)) {
-                    printf("cycle set\n");
-                    explorer->leftNeigh = graph[explorer->x-1][explorer->y];
-                    (graph[explorer->x-1][explorer->y])->rightNeigh = explorer;
-                    //printf("cycle set N\n");
-                    //explorer = popC();
-                    continue;
-                } else {
-                    printf("cell left but already connected\n");
-                }
-            } else if (((explorer->cellVal & CELL_PATH_E) == CELL_PATH_E) && (explorer->x != MAZE_WIDTH-1)) {
-                printf("at x=%d, y=%d\n", explorer->x, explorer->y);
-                if (graph[explorer->x+1][explorer->y] == NULL) {
-                    printf("moving east\n");
-                    explorer->rightNeigh = createCell(explorer->x+1, explorer->y);
-                    if (explorer->rightNeigh == NULL) continue; //in case of misallocation
-                    graph[explorer->x+1][explorer->y] = explorer->rightNeigh;
-                    (explorer->rightNeigh)->originator = 3; //came from west 
-                    explorer = explorer->rightNeigh;
-                    explorer->leftNeigh = graph[explorer->x-1][explorer->y];
-                    pushC(explorer);
-                    continue;
-                } else if ((graph[explorer->x+1][explorer->y] != NULL) && (explorer->rightNeigh == NULL)) {
-                    printf("cycle set\n");
-                    explorer->rightNeigh = graph[explorer->x+1][explorer->y];
-                    (graph[explorer->x+1][explorer->y])->leftNeigh = explorer;
-                    //printf("cycle set N\n");
-                    //explorer = popC();
-                    continue;
-                } else {
-                    printf("cell right but already connected\n");
-                }
-            } else {
-                printf("Reached dead end or Full maze explored!\n");
-                explorer = popC();
+    }
+
+    for (int r = 0; r < MAZE_HEIGHT; r++) {
+        for (int c = 0; c < MAZE_WIDTH; c++) {
+            Cell* current = graph[r][c];
+            if ((current->cellVal & CELL_EXIT) == CELL_EXIT) {
+                //if exit found
+                exitLocations[exitsFound] = current;
+                exitsFound++;
+                printf("An exit found at x=%d, y=%d!\n", r, c);
             }
-        }  
+            if (((current->cellVal & CELL_PATH_N) == CELL_PATH_N) && (r != 0)) {
+                current->upNeigh = graph[r - 1][c];
+            }
+            if (((current->cellVal & CELL_PATH_S) == CELL_PATH_S) && (r != (MAZE_HEIGHT - 1))) {
+                current->downNeigh = graph[r + 1][c];
+            }
+            if (((current->cellVal & CELL_PATH_W) == CELL_PATH_W) && (c != 0)) {
+                current->leftNeigh = graph[r][c - 1];
+            }
+            if (((current->cellVal & CELL_PATH_E) == CELL_PATH_E) && (c != (MAZE_WIDTH - 1))) {
+                current->rightNeigh = graph[r][c + 1];
+            }
+        }
+    }
     
-    printf("Maze solved!\n");
-    return center;
+    printf("graph filled!\n");
 }
 
 
 //function will run dijkstra's on the graph given the graph and the destination 
-void dijkstra(Cell* center) {
+void dijkstra() {
+    Cell* center = graph[MAZE_HEIGHT/2][MAZE_WIDTH/2];
     Cell* moving = center;
     center->distance = 0;
     //variables for where to go next
     
-    for (int i = 0; i < (MAZE_HEIGHT*MAZE_WIDTH); i++) { //number of passes THINK
+    for (int i = 0; i < (MAZE_HEIGHT*MAZE_WIDTH); i++) { //number of passes
         int smallestD = INF;
         Cell* nearest = NULL;
         moving->visited = true;
@@ -512,13 +435,13 @@ void dijkstra(Cell* center) {
                             smallestD = (moving->upNeigh)->distance;
                             nearest = moving->upNeigh;
                         }
-                    } else if ((moving->upNeigh)->previous == NULL) {
-                        (moving->upNeigh)->distance = (moving->distance) + 1;
-                        (moving->upNeigh)->previous = moving;
-                        if ((moving->upNeigh)->distance < smallestD) {
-                            smallestD = (moving->upNeigh)->distance;
-                            nearest = moving->upNeigh;
-                        }
+                    }
+                } else if ((moving->upNeigh)->previous == NULL) {
+                    (moving->upNeigh)->distance = (moving->distance) + 1;
+                    (moving->upNeigh)->previous = moving;
+                    if ((moving->upNeigh)->distance < smallestD) {
+                        smallestD = (moving->upNeigh)->distance;
+                        nearest = moving->upNeigh;
                     }
                 }
             }
@@ -533,14 +456,15 @@ void dijkstra(Cell* center) {
                             smallestD = (moving->downNeigh)->distance;
                             nearest = moving->downNeigh;
                         }
-                    } else if ((moving->downNeigh)->previous == NULL) {
-                        (moving->downNeigh)->distance = (moving->distance) + 1;
-                        (moving->downNeigh)->previous = moving;
-                        if ((moving->downNeigh)->distance < smallestD) {
-                            smallestD = (moving->downNeigh)->distance;
-                            nearest = moving->downNeigh;
-                        }
                     }
+                } else if ((moving->downNeigh)->previous == NULL) {
+                    (moving->downNeigh)->distance = (moving->distance) + 1;
+                    (moving->downNeigh)->previous = moving;
+                    if ((moving->downNeigh)->distance < smallestD) {
+                        smallestD = (moving->downNeigh)->distance;
+                        nearest = moving->downNeigh;
+                    }
+                    
                 }
             }
         }
@@ -554,13 +478,13 @@ void dijkstra(Cell* center) {
                             smallestD = (moving->leftNeigh)->distance;
                             nearest = moving->leftNeigh;
                         }
-                    } else if ((moving->leftNeigh)->previous == NULL) {
-                        (moving->leftNeigh)->distance = (moving->distance) + 1;
-                        (moving->leftNeigh)->previous = moving;
-                        if ((moving->leftNeigh)->distance < smallestD) {
-                            smallestD = (moving->leftNeigh)->distance;
-                            nearest = moving->leftNeigh;
-                        }
+                    }
+                } else if ((moving->leftNeigh)->previous == NULL) {
+                    (moving->leftNeigh)->distance = (moving->distance) + 1;
+                    (moving->leftNeigh)->previous = moving;
+                    if ((moving->leftNeigh)->distance < smallestD) {
+                        smallestD = (moving->leftNeigh)->distance;
+                        nearest = moving->leftNeigh;
                     }
                 }
             }
@@ -575,13 +499,13 @@ void dijkstra(Cell* center) {
                             smallestD = (moving->rightNeigh)->distance;
                             nearest = moving->rightNeigh;
                         }
-                    } else if ((moving->rightNeigh)->previous == NULL) {
-                        (moving->rightNeigh)->distance = (moving->distance) + 1;
-                        (moving->rightNeigh)->previous = moving;
-                        if ((moving->rightNeigh)->distance < smallestD) {
-                            smallestD = (moving->rightNeigh)->distance;
-                            nearest = moving->rightNeigh;
-                        }
+                    }
+                } else if ((moving->rightNeigh)->previous == NULL) {
+                    (moving->rightNeigh)->distance = (moving->distance) + 1;
+                    (moving->rightNeigh)->previous = moving;
+                    if ((moving->rightNeigh)->distance < smallestD) {
+                        smallestD = (moving->rightNeigh)->distance;
+                        nearest = moving->rightNeigh;
                     }
                 }
             }
@@ -634,10 +558,10 @@ int main() {
     addExits();
     print_maze();
     printf("finished printing\n");
-    Cell* center = generate_graph();
+    generate_graph();
     printf("Num exits: %d\n", exitsFound);
-    //dijkstra(center);
-    //int pathL = findPaths();
-    //displayPaths(pathL);
-    //print_maze();
+    dijkstra();
+    int pathL = findPaths();
+    displayPaths(pathL);
+    print_maze();
 }
