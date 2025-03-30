@@ -6,8 +6,8 @@
 //#include <gtk/gtk.h>
 
 //Define the size of the maze, can be change
-#define MAZE_WIDTH 11 // DO ODD
-#define MAZE_HEIGHT 11 //DO ODD
+#define MAZE_WIDTH 7 // DO ODD
+#define MAZE_HEIGHT 7 //DO ODD
 #define CELL_SIZE 20 //Cell size 20x20 pixels in GTK window
 #define INF 999999;
 
@@ -44,8 +44,6 @@ typedef struct cell{
 
 //array to store cells current state(i.e visited?)
 int maze[MAZE_WIDTH * MAZE_HEIGHT];
-//2D array for keeping track of if the cell has been added to tree
-int added[MAZE_HEIGHT][MAZE_WIDTH] = {0};
 //3D array to contain all 4 paths to exits
 int paths[4][2][MAZE_HEIGHT * MAZE_WIDTH] = {0};
 //2D array of exit locations
@@ -57,13 +55,15 @@ Cell* stackC[MAZE_WIDTH * MAZE_HEIGHT];
 //track number of elements in stackC
 int stackC_size = 0;
 //track number of elements in stack
-int stack_size = 0;
+int stack_size = -1;
 //track number of visited cells
 int visited_cell = 0;
 //keep track of closest exit
 int shortestE = 0;
 //number of locatable exits
 int exitsFound = 0;
+//2d array of cell structs for solving
+Cell* graph[MAZE_WIDTH][MAZE_HEIGHT] = {NULL};
 //declare visual maze of be displayed
 char visual_maze[(MAZE_HEIGHT*2)+1][(MAZE_WIDTH*2)+1];
 
@@ -83,7 +83,7 @@ Point popP(){
 }
 
 void pushC(Cell *c) {
-    stackC[stackC_size++] = c;
+    stackC[++stackC_size] = c;
 }
 
 Cell* popC() {
@@ -358,7 +358,6 @@ void addExits(){
 
 Cell* createCell(int x, int y) {
     //printf("MADE IT IN\n");
-    if (added[x][y] == 1) return NULL;
     //printf("MADE IT PAST\n");
     Cell* newCell = (Cell*)malloc(sizeof(Cell));
     newCell->x = x;
@@ -372,39 +371,15 @@ Cell* createCell(int x, int y) {
     newCell->distance = INF;
     newCell->visited = false;
     newCell->previous = NULL;
-    added[x][y] = 1;
     return newCell;
-}
-
-//function for moving backwards one step
-Cell* backtrack(Cell* location) {
-    switch (location->originator) {
-        case 1:              
-            location = location->upNeigh;
-            break;
-        case 2:
-            location = location->downNeigh;
-            break;
-        case 3: 
-            location = location->leftNeigh;
-            break;
-        case 4:
-            location = location->rightNeigh;
-            break;
-        default:
-            printf("backtrack error\n"); 
-            break;
-    }
-    return location;
 }
 
 //function will move through the entire maze, allowing for cycles, and keep track of exit coordinates (but won't stop when it finds them)
 Cell* generate_graph() {
     Cell* center = createCell((MAZE_WIDTH/2), (MAZE_HEIGHT/2));
+    graph[MAZE_WIDTH/2][MAZE_HEIGHT/2] = center;
     Cell* explorer = center;
-    Cell* temp; //for parent storing cell that you just came from
-    Cell* backtracker; //for backtracking in cycles
-    printf("started graphging\n");
+    printf("started graphing\n");
     pushC(center);
     while (stackC_size > 0) { //
         
@@ -414,112 +389,96 @@ Cell* generate_graph() {
             exitLocations[exitsFound] = explorer;
             exitsFound++;
             printf("An exit found at x=%d, y=%d!\n", explorer->x, explorer->y);
-            explorer->cellVal -= 32;
-            
-            
+            explorer->cellVal -= 32;  
         }
        
-            if ((explorer->cellVal & CELL_PATH_N) == CELL_PATH_N && explorer->y != 0) {
-                if (added[explorer->x][explorer->y-1] == 0) {
+            if (((explorer->cellVal & CELL_PATH_N) == CELL_PATH_N) && (explorer->y != 0)) {
+                printf("at x=%d, y=%d\n", explorer->x, explorer->y);
+                if (graph[explorer->x][explorer->y-1] == NULL) {
                     printf("moving north\n");
-                    printf("at x=%d, y=%d!\n", explorer->x, explorer->y);
                     explorer->upNeigh = createCell(explorer->x, explorer->y-1);
                     if (explorer->upNeigh == NULL) continue; //in case of misallocation
+                    graph[explorer->x][explorer->y-1] = explorer->upNeigh;
                     (explorer->upNeigh)->originator = 2; //came from south
-                    temp = explorer;
                     explorer = explorer->upNeigh;
-                    explorer->downNeigh = temp;
+                    explorer->downNeigh = graph[explorer->x][explorer->y+1];
                     pushC(explorer);
                     continue;
-                } else if ((added[explorer->x][explorer->y-1] == 1) && (explorer->upNeigh != NULL )) {
-                    //make cycle link
+                } else if ((graph[explorer->x][explorer->y-1] != NULL) && (explorer->upNeigh == NULL )) { //check if there is a cell in the open space above and that there isn't a link between the two
                     printf("cycle set\n");
-                    backtracker = explorer;
-                    //printf("cycle head x=%d y=%d\n", explorer->x,explorer->y);
-                    while ((backtracker->x != explorer->x) && (backtracker->y != explorer->y-1)) {
-                        backtracker = backtrack(backtracker);
-                        printf("cycle body x=%d y=%d\n", backtracker->x,backtracker->y);
-                    }
-                    backtracker->downNeigh = explorer;
-                    explorer->upNeigh = backtracker;
+                    explorer->upNeigh = graph[explorer->x][explorer->y-1];
+                    (graph[explorer->x][explorer->y-1])->downNeigh = explorer;
                     //printf("cycle set N\n");
+                    //explorer = popC();
                     continue;
+                } else {
+                    printf("cell above but already connected\n");
                 }
-            } if ((explorer->cellVal & CELL_PATH_S) == CELL_PATH_S && explorer->y != MAZE_HEIGHT-1) {
-                if (added[explorer->x][explorer->y+1] == 0) { 
+            } else if (((explorer->cellVal & CELL_PATH_S) == CELL_PATH_S) && (explorer->y != MAZE_HEIGHT-1)) {
+                printf("at x=%d, y=%d\n", explorer->x, explorer->y);
+                if (graph[explorer->x][explorer->y+1] == NULL) { 
                     printf("moving south\n");
-                    printf("at x=%d, y=%d!\n", explorer->x, explorer->y);
                     explorer->downNeigh = createCell(explorer->x, explorer->y+1);
                     if (explorer->downNeigh == NULL) continue; //in case of misallocation
+                    graph[explorer->x][explorer->y+1] = explorer->downNeigh;
                     (explorer->downNeigh)->originator = 1; //came from north
-                    temp = explorer;
                     explorer = explorer->downNeigh;
-                    explorer->upNeigh = temp;
+                    explorer->upNeigh = graph[explorer->x][explorer->y-1];
                     pushC(explorer);
                     continue;
-                } else if ((added[explorer->x][explorer->y+1] == 1) && explorer->downNeigh!= NULL) {
+                } else if ((graph[explorer->x][explorer->y+1] != NULL) && (explorer->downNeigh == NULL)) {
                     printf("cycle set\n");
-                    backtracker = explorer;
-                    //printf("cycle head x=%d y=%d\n", explorer->x,explorer->y);
-                    while ((backtracker->x != explorer->x) && (backtracker->y != explorer->y+1)) {
-                        backtracker = backtrack(backtracker);
-                        printf("cycle body x=%d y=%d\n", backtracker->x,backtracker->y);
-                    }
-                    backtracker->upNeigh = explorer;
-                    explorer->downNeigh = backtracker;
-                    //printf("cycle set S\n");
+                    explorer->downNeigh = graph[explorer->x][explorer->y+1];
+                    (graph[explorer->x][explorer->y+1])->upNeigh = explorer;
+                    //printf("cycle set N\n");
+                    //explorer = popC();
                     continue;
+                } else {
+                    printf("cell below but already connected\n");
                 }
-            } if ((explorer->cellVal & CELL_PATH_W) == CELL_PATH_W && explorer->x != 0) {
-                if (added[explorer->x-1][explorer->y] == 0) { 
+            } else if (((explorer->cellVal & CELL_PATH_W) == CELL_PATH_W) && (explorer->x != 0)) {
+                printf("at x=%d, y=%d\n", explorer->x, explorer->y);
+                if (graph[explorer->x-1][explorer->y] == NULL) { 
                     printf("moving west\n");
-                    printf("at x=%d, y=%d!\n", explorer->x, explorer->y);
                     explorer->leftNeigh = createCell(explorer->x-1, explorer->y);
                     if (explorer->leftNeigh == NULL) continue; //in case of misallocation
+                    graph[explorer->x-1][explorer->y] = explorer->leftNeigh;
                     (explorer->leftNeigh)->originator = 4; //came from east
-                    temp = explorer;
                     explorer = explorer->leftNeigh;
-                    explorer->rightNeigh = temp;
+                    explorer->rightNeigh = graph[explorer->x+1][explorer->y];
                     pushC(explorer);
                     continue;
-                } else if ((added[explorer->x-1][explorer->y] == 1) && (explorer->leftNeigh != NULL)) {
+                } else if ((graph[explorer->x-1][explorer->y] != NULL) && (explorer->leftNeigh == NULL)) {
                     printf("cycle set\n");
-                    backtracker = explorer;
-                    //printf("cycle head x=%d y=%d\n", explorer->x,explorer->y);
-                    while ((backtracker->x != explorer->x-1) && (backtracker->y != explorer->y)) {
-                        backtracker = backtrack(backtracker);
-                        printf("cycle body x=%d y=%d\n", backtracker->x,backtracker->y);
-                    }
-                    backtracker->rightNeigh = explorer;
-                    explorer->leftNeigh = backtracker;
-                    //printf("cycle set W\n");
+                    explorer->leftNeigh = graph[explorer->x-1][explorer->y];
+                    (graph[explorer->x-1][explorer->y])->rightNeigh = explorer;
+                    //printf("cycle set N\n");
+                    //explorer = popC();
                     continue;
+                } else {
+                    printf("cell left but already connected\n");
                 }
-            } if ((explorer->cellVal & CELL_PATH_E) == CELL_PATH_E && explorer->x != MAZE_WIDTH-1) {
-                if (added[explorer->x+1][explorer->y] == 0) {
+            } else if (((explorer->cellVal & CELL_PATH_E) == CELL_PATH_E) && (explorer->x != MAZE_WIDTH-1)) {
+                printf("at x=%d, y=%d\n", explorer->x, explorer->y);
+                if (graph[explorer->x+1][explorer->y] == NULL) {
                     printf("moving east\n");
-                    printf("at x=%d, y=%d!\n", explorer->x, explorer->y);
                     explorer->rightNeigh = createCell(explorer->x+1, explorer->y);
                     if (explorer->rightNeigh == NULL) continue; //in case of misallocation
-                    (explorer->rightNeigh)->originator = 3; //came from west
-                    temp = explorer;
+                    graph[explorer->x+1][explorer->y] = explorer->rightNeigh;
+                    (explorer->rightNeigh)->originator = 3; //came from west 
                     explorer = explorer->rightNeigh;
-                    explorer->leftNeigh = temp;
+                    explorer->leftNeigh = graph[explorer->x-1][explorer->y];
                     pushC(explorer);
                     continue;
-                } else if ((added[explorer->x+1][explorer->y] == 1) && (explorer->rightNeigh != NULL)) {
+                } else if ((graph[explorer->x+1][explorer->y] != NULL) && (explorer->rightNeigh == NULL)) {
                     printf("cycle set\n");
-                    backtracker = explorer;
-                    //printf("cycle head x=%d y=%d\n", explorer->x,explorer->y);
-                    while ((backtracker->x != explorer->x+1) && (backtracker->y != explorer->y)) {
-                        backtracker = backtrack(backtracker);
-                        printf("cycle body x=%d y=%d\n", backtracker->x,backtracker->y);
-                    }
-                    backtracker->leftNeigh = explorer;
-                    explorer->rightNeigh = backtracker;
-                    //printf("cycle set E\n");
-                   
+                    explorer->rightNeigh = graph[explorer->x+1][explorer->y];
+                    (graph[explorer->x+1][explorer->y])->leftNeigh = explorer;
+                    //printf("cycle set N\n");
+                    //explorer = popC();
                     continue;
+                } else {
+                    printf("cell right but already connected\n");
                 }
             } else {
                 printf("Reached dead end or Full maze explored!\n");
