@@ -6,8 +6,8 @@
 //#include <gtk/gtk.h>
 
 //Define the size of the maze, can be change
-#define MAZE_WIDTH 15// DO ODD
-#define MAZE_HEIGHT 15 //DO ODD
+int MAZE_WIDTH;// DO ODD
+int MAZE_HEIGHT; //DO ODD
 #define CELL_SIZE 20 //Cell size 20x20 pixels in GTK window
 
 //Paths: North, South, East, and West
@@ -39,17 +39,11 @@ typedef struct cell{
 }Cell;
 
 //array to store cells current state(i.e visited?)
-int maze[MAZE_WIDTH * MAZE_HEIGHT];
-//2D array for keeping track of if the cell has been added to tree
-int added[MAZE_HEIGHT][MAZE_WIDTH] = {0};
-//3D array to contain all 4 paths to exits
-int paths[4][2][MAZE_HEIGHT * MAZE_WIDTH] = {0};
+
 //2D array of exit locations
 Cell* exitLocations[4];
 //stack for gen back tracking
-Point stack[MAZE_WIDTH * MAZE_HEIGHT];
-//stack for solving
-Cell* stackC[MAZE_WIDTH * MAZE_HEIGHT];
+
 //track number of elements in stackC
 int stackC_size = 0;
 //track number of elements in stack
@@ -61,7 +55,7 @@ int shortestE = 0;
 //number of locatable exits
 int exitsFound = 0;
 //declare visual maze of be displayed
-char visual_maze[(MAZE_HEIGHT*2)+1][(MAZE_WIDTH*2)+1];
+
 
 int exits [2][4];
 
@@ -71,20 +65,20 @@ bool isEmpty(){
 }
 
 //PUSH function, return updated count
-void pushP(Point p){
+void pushP(Point p, Point stack[]){
     stack[stack_size++] = p;
 }
 
 //POP Function, return updated count
-Point popP(){
+Point popP(Point stack[]){
     return stack[--stack_size];
 }
 
-void pushC(Cell *c) {
+void pushC(Cell *c, Cell *stackC[]) {
     stackC[stackC_size++] = c;
 }
 
-Cell* popC() {
+Cell* popC(Cell* stackC[]) {
     return stackC[--stackC_size];
 }
 
@@ -95,7 +89,7 @@ int get_index(int x, int y){
 }
 
 //Intialize starting center box, 3x3
-void intialize_center_box(){
+void intialize_center_box(int maze[]){
     //Start top left corner of 3x3 box
     int start_x = MAZE_WIDTH / 2 - 1;
     int start_y = MAZE_HEIGHT / 2 - 1;
@@ -151,15 +145,15 @@ void intialize_center_box(){
 }
 
 //Maze generating algorithm: DFS, recursive backtracking
-void generate_maze(){
+void generate_maze(int maze[],Point stack[]){
     memset(maze, 0, sizeof(maze));
     srand(time(NULL));
 
-    intialize_center_box();
+    intialize_center_box(maze);
 
     //starting position
     Point start = {MAZE_WIDTH/2, MAZE_HEIGHT/2}; //generate maze right in the middle
-    pushP(start); //starting cell push onto stack
+    pushP(start,stack); //starting cell push onto stack
     //Starting cell is marked visited, update visited cell
     maze[get_index(start.x, start.y)] |= CELL_VISITED;
     visited_cell++;
@@ -197,36 +191,36 @@ void generate_maze(){
             case 0:
                 maze[get_index(x, y - 1)] |= CELL_VISITED | CELL_PATH_S;
                 maze[get_index(x, y)] |= CELL_PATH_N;
-                pushP((Point){x, y - 1});
+                pushP((Point){x, y - 1},stack);
                 break;
             case 1://Case 2:
                 maze[get_index(x + 1, y)] |= CELL_VISITED | CELL_PATH_W;
                 maze[get_index(x, y)] |= CELL_PATH_E;
-                pushP((Point){x + 1, y});
+                pushP((Point){x + 1, y},stack);
                 break;
             case 2: //Case 3:
                 maze[get_index(x, y + 1)] |= CELL_VISITED | CELL_PATH_N;
                 maze[get_index(x, y)] |= CELL_PATH_S;
-                pushP((Point){x, y + 1});
+                pushP((Point){x, y + 1},stack);
                 break;
             case 3: //Case 4:
                 maze[get_index(x - 1, y)] |= CELL_VISITED | CELL_PATH_E;
                 maze[get_index(x, y)] |= CELL_PATH_W;
-                pushP((Point){x - 1, y});
+                pushP((Point){x - 1, y},stack);
                 break;
             }
             visited_cell++;
         } else {
-            popP();
+            popP(stack);
         }  
     }
 }
 
-void unfill(int outputX, int outputY) {
+void unfill(int outputX, int outputY, char *visual_maze[]) {
     visual_maze[outputX][outputY] = ' ';
 }
 
-void print_maze() {
+void print_maze(int maze[],char *visual_maze[]) {
     int workingX = 0;
     int workingY = 0;
     for (int i = 0; i < (MAZE_HEIGHT*2)+1; i++) { //go down columns
@@ -262,20 +256,20 @@ void print_maze() {
             if ((maze[get_index(j, i)] & CELL_COLOUR) == CELL_COLOUR) {
                 visual_maze[workingX][workingY] = '#';
             } else {
-                unfill(workingX, workingY);
+                unfill(workingX, workingY, visual_maze);
             }
 
             if ((walls & CELL_PATH_N) == CELL_PATH_N)  //north
-                unfill(workingX, workingY-1);
+                unfill(workingX, workingY-1,visual_maze);
             
             if ((walls & CELL_PATH_S) == CELL_PATH_S)  //south
-                unfill(workingX, workingY+1);
+                unfill(workingX, workingY+1,visual_maze);
             
             if ((walls & CELL_PATH_E) == CELL_PATH_E)  //east
-                unfill(workingX+1, workingY);
+                unfill(workingX+1, workingY,visual_maze);
             
             if ((walls & CELL_PATH_W) == CELL_PATH_W)  //west
-                unfill(workingX-1, workingY);
+                unfill(workingX-1, workingY,visual_maze);
         }
         printf("\n"); //also for check printing
     } 
@@ -302,58 +296,58 @@ void print_maze() {
 }
 
 //Add entrance function to the 3x3 box. Will add entrance on each side of the box, in the middle
-void addEntranceToBox(){
+void addEntranceToBox(int maze[], char *visual_maze[]){
     //Top left corner of 3x3
     int start_x = MAZE_WIDTH/2 - 1;
     int start_y = MAZE_HEIGHT/2 - 1;
 
     //Top side entrance
     maze[get_index(start_x + 1, start_y - 1)] |= CELL_VISITED | CELL_PATH_S;
-    unfill((start_y * 2) - 1, (start_x * 2) + 3);
+    unfill((start_y * 2) - 1, (start_x * 2) + 3,visual_maze);
 
     // Bottom side entrance
     maze[get_index(start_x + 1, start_y + 3)] |= CELL_VISITED | CELL_PATH_N;
-    unfill((start_y * 2) + 5, (start_x * 2) + 3);
+    unfill((start_y * 2) + 5, (start_x * 2) + 3,visual_maze);
 
     // Left side entrance
     maze[get_index(start_x - 1, start_y + 1)] |= CELL_VISITED | CELL_PATH_E;
-    unfill((start_y * 2) + 3, (start_x * 2) - 1);
+    unfill((start_y * 2) + 3, (start_x * 2) - 1,visual_maze);
 
     // Right side entrance
     maze[get_index(start_x + 3, start_y + 1)] |= CELL_VISITED | CELL_PATH_W;
-    unfill((start_y * 2) + 3, (start_x * 2) + 7);
+    unfill((start_y * 2) + 3, (start_x * 2) + 7,visual_maze);
 }
 
 //Function to add entrance, 4 entrance, 1 on each side of the maze, random position
-void addExits(){
+void addExits(int maze[], char *visual_maze[]){
     srand(time(NULL)); //ensures different result every run
 
     //Top side exit, y= 0
     int topExit = (rand() % (MAZE_WIDTH - 2)) + 1;
     maze[get_index(topExit, 0)] |= CELL_PATH_N;
     maze[get_index(topExit, 0)] |= CELL_EXIT;
-    unfill(0, (topExit * 2) + 1);//paths occupies odd number, so +1 after *2. Repeat for all
+    unfill(0, (topExit * 2) + 1,visual_maze);//paths occupies odd number, so +1 after *2. Repeat for all
 
     //Bottom side exit, y = -1
     int bottomExit = (rand() % (MAZE_WIDTH - 2)) + 1;
     maze[get_index(bottomExit, MAZE_HEIGHT - 1)] |= CELL_PATH_S;
     maze[get_index(bottomExit, MAZE_HEIGHT -1 )] |= CELL_EXIT;
-    unfill(MAZE_HEIGHT * 2, (bottomExit * 2) +1);
+    unfill(MAZE_HEIGHT * 2, (bottomExit * 2) +1,visual_maze);
 
     //Left side exit, x = 0
     int leftExit = (rand() % (MAZE_HEIGHT - 2)) + 1;
     maze[get_index(0, leftExit)] |= CELL_PATH_W;
     maze[get_index(0, leftExit)] |= CELL_EXIT;
-    unfill((leftExit * 2) + 1, 0);
+    unfill((leftExit * 2) + 1, 0,visual_maze);
 
     //right side exit, x = -1
     int rightExit = (rand() % (MAZE_HEIGHT - 2)) + 1;
     maze[get_index(MAZE_WIDTH - 1, rightExit)] |= CELL_PATH_E;
     maze[get_index(MAZE_WIDTH - 1, rightExit)] |= CELL_EXIT;
-    unfill((rightExit * 2) + 1, MAZE_WIDTH * 2);
+    unfill((rightExit * 2) + 1, MAZE_WIDTH * 2,visual_maze);
 }
 
-Cell* createCell(int x, int y) {
+Cell* createCell(int maze[],int x, int y, int *added[]) {
     //printf("MADE IT IN\n");
     if (added[x][y] == 1) return NULL;
     //printf("MADE IT PAST\n");
@@ -370,12 +364,12 @@ Cell* createCell(int x, int y) {
     return newCell;
 }
 
-void solve_maze() {
-    Cell* center = createCell((MAZE_WIDTH/2), (MAZE_HEIGHT/2));
+void solve_maze(int maze[], Cell* stackC, int *added[]) {
+    Cell* center = createCell(maze,(MAZE_WIDTH/2), (MAZE_HEIGHT/2), added);
     Cell* explorer = center;
     Cell* temp; //for parent storing thing
   
-    pushC(center);
+    pushC(center, stackC);
 
     while ((exitsFound < 4) && (stackC_size > 0)) { //
         //printf("looping\n");
@@ -396,53 +390,53 @@ void solve_maze() {
             if (((explorer->cellVal & CELL_PATH_N) == CELL_PATH_N) && (added[explorer->x][explorer->y-1] == 0)) {
                 //printf("moving north\n");
                 //printf("at %d going to %d\n\n", maze[get_index(explorer->x, explorer->y)], maze[get_index(explorer->x, explorer->y-1)]);
-                explorer->upNeigh = createCell(explorer->x, explorer->y-1);
+                explorer->upNeigh = createCell(maze, explorer->x, explorer->y-1, added);
                 if (explorer->upNeigh == NULL) continue; //in case of the cycle error (redundant)
                 (explorer->upNeigh)->originator = 2; //came from south
                 temp = explorer;
                 explorer = explorer->upNeigh;
                 explorer->downNeigh = temp;
-                pushC(explorer);
+                pushC(explorer, stackC);
             } else if (((explorer->cellVal & CELL_PATH_S) == CELL_PATH_S) && (added[explorer->x][explorer->y+1] == 0)) {
                 //printf("moving south\n");
                 //printf("at %d going to %d\n\n", maze[get_index(explorer->x, explorer->y)], maze[get_index(explorer->x, explorer->y+1)]);
-                explorer->downNeigh = createCell(explorer->x, explorer->y+1);
+                explorer->downNeigh = createCell(maze,explorer->x, explorer->y+1, added);
                 if (explorer->downNeigh == NULL) continue; //in case of the cycle error
                 (explorer->downNeigh)->originator = 1; //came from north
                 temp = explorer;
                 explorer = explorer->downNeigh;
                 explorer->upNeigh = temp;
-                pushC(explorer);
+                pushC(explorer,stackC);
             } else if (((explorer->cellVal & CELL_PATH_W) == CELL_PATH_W) && (added[explorer->x-1][explorer->y] == 0)) {
                 //printf("moving west\n");
                 //printf("at %d going to %d\n\n", maze[get_index(explorer->x, explorer->y)], maze[get_index(explorer->x-1, explorer->y)]);
-                explorer->leftNeigh = createCell(explorer->x-1, explorer->y);
+                explorer->leftNeigh = createCell(maze,explorer->x-1, explorer->y,added);
                 if (explorer->leftNeigh == NULL) continue; //in case of the cycle error
                 (explorer->leftNeigh)->originator = 4; //came from east
                 temp = explorer;
                 explorer = explorer->leftNeigh;
                 explorer->rightNeigh = temp;
-                pushC(explorer);
+                pushC(explorer,stackC);
             } else if (((explorer->cellVal & CELL_PATH_E) == CELL_PATH_E) && (added[explorer->x+1][explorer->y] == 0)) {
                 //printf("moving east\n");
                 //printf("at %d going to %d\n\n", maze[get_index(explorer->x, explorer->y)], maze[get_index(explorer->x+1, explorer->y)]);
-                explorer->rightNeigh = createCell(explorer->x+1, explorer->y);
+                explorer->rightNeigh = createCell(maze,explorer->x+1, explorer->y,added);
                 if (explorer->rightNeigh == NULL) continue; //in case of the cycle error
                 (explorer->rightNeigh)->originator = 3; //came from west
                 temp = explorer;
                 explorer = explorer->rightNeigh;
                 explorer->leftNeigh = temp;
-                pushC(explorer);
+                pushC(explorer,stackC);
             } else {
                 //printf("Reached dead end or Full maze explored!\n");
-                explorer = popC();
+                explorer = popC(stackC);
             }
         }  
     }
     printf("Maze solved!\n");
 }
 
-int findPaths() {
+int findPaths(int **paths[]) {
     int cellNum, pathL = 99999;
 
     for (int i = 0; i < exitsFound; i++) {
@@ -484,7 +478,7 @@ int findPaths() {
     return pathL; //pathL, actual number of cells (starts at 1)
 }
 
-void displayPaths(int length) {
+void displayPaths(int maze[], int length, int **paths[]) {
     for (int i = 0; i < length; i++) {
         maze[(get_index(paths[shortestE][0][i], paths[shortestE][1][i]))] |= CELL_COLOUR;
     }
@@ -492,16 +486,29 @@ void displayPaths(int length) {
 
  
 int main() {
-    generate_maze();
+    printf("Enter Maze dimensions:");
+    scanf("%d %d", &MAZE_WIDTH, &MAZE_HEIGHT);
+    int maze[MAZE_WIDTH * MAZE_HEIGHT];
+    //2D array for keeping track of if the cell has been added to tree
+    int added[MAZE_HEIGHT][MAZE_WIDTH] = {0};
+    //3D array to contain all 4 paths to exits
+    int paths[4][2][MAZE_HEIGHT * MAZE_WIDTH] = {0};
+
+    Point stack[MAZE_WIDTH * MAZE_HEIGHT];
+    //stack for solving
+    Cell* stackC[MAZE_WIDTH * MAZE_HEIGHT];
+    char visual_maze[(MAZE_HEIGHT*2)+1][(MAZE_WIDTH*2)+1];
+
+    generate_maze(maze, stack);
     printf("in main single check\n");
-    addEntranceToBox();
-    addExits();
-    print_maze();
-    solve_maze();
+    addEntranceToBox(maze, visual_maze);
+    addExits(maze, visual_maze);
+    print_maze(maze,visual_maze);
+    solve_maze(maze, stackC, added);
     printf("Num exits: %d\n", exitsFound);
-    int pathL = findPaths();
-    displayPaths(pathL);
-    print_maze();
+    int pathL = findPaths(paths);
+    displayPaths(maze,pathL,paths);
+    print_maze(maze, visual_maze);
 }
 /*
 int main(int argc, char *argv[]) {
