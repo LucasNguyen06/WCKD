@@ -22,8 +22,8 @@ regards to the key features of Dijkstra's algorithm.
 */
 
 //Define the size of the maze, can be changed
-#define MAZE_WIDTH 31 //use an odd number
-#define MAZE_HEIGHT 31 //use an odd number (note, must be square)
+#define MAZE_WIDTH 11 //use an odd number
+#define MAZE_HEIGHT 11 //use an odd number (note, must be square)
 #define INF 9999
 
 //Paths: North, South, East, and West
@@ -284,7 +284,7 @@ void print_maze() {
         }
     printf("\n");
     }
-    printf("\033[0m "); //clear colours
+    printf("\033[0m"); //clear colours
 }
 
 //Add entrance function to the 3x3 box. Will add entrance on each side of the box, in the middle
@@ -582,12 +582,23 @@ int main() {
     print_maze(); 
 
     //solving
-    generate_graph();
-    printf("Num exits: %d\n", exitsFound);
-    dijkstra();
-    int pathL = findPaths();
-    displayPaths(pathL);
+    bool displayed = false; 
+    char ready[10]; //for getting use input
 
-    //print solved maze
-    print_maze();
+    while (!displayed) { //loop until the solution has been displayed
+        printf("Enter 'done' when you would like to see the solution\n");
+        scanf("%s", ready);
+        
+        if (strcmp(ready, "done") == 0) { //check if they entered done
+            generate_graph();
+            printf("Num exits: %d\n", exitsFound);
+            dijkstra();
+            int pathL = findPaths();
+            displayPaths(pathL);
+
+            //print solved maze
+            print_maze();
+            displayed = true; //solution has been displayed so program can end
+        }
+    }
 }
