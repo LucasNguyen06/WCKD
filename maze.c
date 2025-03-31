@@ -21,9 +21,9 @@ Attributions: a YouTube video by javidx9 was used to build familiarity with recu
 regards to the key features of Dijkstra's algorithm.
 */
 
-//Define the size of the maze, can be changed
-#define MAZE_WIDTH 11 //use an odd number
-#define MAZE_HEIGHT 11 //use an odd number (note, must be square)
+// Maze dimensions
+int MAZE_WIDTH;  // Must be odd number
+int MAZE_HEIGHT; // Must be odd number
 #define INF 9999
 
 //Paths: North, South, East, and West
@@ -58,15 +58,15 @@ typedef struct cell{
 }Cell;
 
 //array to store cells current state(i.e visited?)
-int maze[MAZE_HEIGHT * MAZE_WIDTH];
+int* maze;
 //3D array to contain all 4 paths to exits
-int paths[4][2][MAZE_HEIGHT * MAZE_WIDTH] = {0};
+int*** paths;
 //2D array of exit locations
-Cell* exitLocations[4];
+Cell** exitLocations;
 //stack for gen back tracking
-Point stack[MAZE_HEIGHT * MAZE_WIDTH];
+Point* stack;
 //stack for solving
-int distances[MAZE_HEIGHT][MAZE_WIDTH];
+int** distances;
 //track number of elements in stack
 int stack_size = -1;
 //track number of visited cells
@@ -76,9 +76,9 @@ int shortestE = 0;
 //number of locatable exits
 int exitsFound = 0;
 //2d array of cell structs for solving
-Cell* graph[MAZE_HEIGHT][MAZE_WIDTH] = {NULL}; //y val then x val
+Cell*** graph; //y val then x val
 //declare visual maze of be displayed
-char visual_maze[(MAZE_HEIGHT*2)+1][(MAZE_WIDTH*2)+1];
+char** visual_maze;
 
 //Check if stack is empty, then return 0, for generation
 bool isEmpty(){
@@ -94,7 +94,6 @@ void pushP(Point p){
 Point popP(){
     return stack[--stack_size]; //decrement the top index and return that point struct
 }
-
 
 //Function that converts 2D array to 1D array index.
 //For easier access to 2D grid using 1D array
@@ -139,12 +138,11 @@ void intialize_center_box(){
     maze[get_index(start_x + 1, start_y + 1)] |= CELL_PATH_S;
     maze[get_index(start_x + 1, start_y + 1)] |= CELL_PATH_E;
     maze[get_index(start_x + 1, start_y + 1)] |= CELL_PATH_W;
-    
 }
 
 //Maze generating algorithm: DFS, recursive backtracking
 void generate_maze(){
-    memset(maze, 0, sizeof(maze)); //set 1D of cell values to 0
+    memset(maze, 0, sizeof(int) * MAZE_WIDTH * MAZE_HEIGHT); //set 1D of cell values to 0
     srand(time(NULL)); //generate random number
 
     intialize_center_box();
@@ -218,75 +216,69 @@ void unfill(int outputX, int outputY) {
 }
 
 void print_maze() {
-    //coodinatres on the visual (expanded) array
-    int workingX = 0;
-    int workingY = 0;
     //fill in entire visual array
-    for (int y = 0; y < (MAZE_HEIGHT*2) + 1; y++) { //progess down columns (from one full row to the next)
-            for (int x = 0; x < (MAZE_WIDTH*2) + 1; x++) { //go across rows (from one column to the next)
-                visual_maze[y][x] = '*';
-            }
+    for (int y = 0; y < (MAZE_HEIGHT*2)+1; y++) { //progess down columns (from one full row to the next)
+        for (int x = 0; x < (MAZE_WIDTH*2)+1; x++) { //go across rows (from one column to the next)
+            visual_maze[x][y] = '*';
         }
+    }
 
     //open cores of cells and break down walls
-    for (int y = 0; y < MAZE_HEIGHT; y++) { //by row
-        for (int x = 0; x < MAZE_WIDTH; x++) { //by column
-
+    for (int y = 0; y < MAZE_HEIGHT; y++) { //by rows
+        for (int x = 0; x < MAZE_WIDTH; x++) { //by columns
             printf("%3d ", maze[get_index(x,y)]); //for printing the maze gen number to check 
-
+            
             //calculate where core falls in the visual array
-            workingX = 2*x + 1;
-            workingY = 2*y + 1;
-
-            //get the cell number
-            int walls = maze[get_index(x, y)];
+            int workingX = x * 2 + 1;
+            int workingY = y * 2 + 1;
+            int cell = maze[get_index(x, y)];
 
             //empty the cores unless it is part of the solution path (intially there are no solutions, no pound signs)
-            if ((maze[get_index(x, y)] & CELL_COLOUR) == CELL_COLOUR) {
+            if ((cell & CELL_COLOUR) == CELL_COLOUR) {
                 visual_maze[workingX][workingY] = '#';
             } else {
-                unfill(workingX, workingY);
+                visual_maze[workingX][workingY] = ' ';
             }
 
-            if ((walls & CELL_PATH_N) == CELL_PATH_N)  //brea north wall
-                unfill(workingX, workingY-1);
-            
-            if ((walls & CELL_PATH_S) == CELL_PATH_S)  //break south wall
-                unfill(workingX, workingY+1);
-            
-            if ((walls & CELL_PATH_E) == CELL_PATH_E)  //break east wall
-                unfill(workingX+1, workingY);
-            
-            if ((walls & CELL_PATH_W) == CELL_PATH_W)  //break west wall
-                unfill(workingX-1, workingY);
+            // Check for paths
+            if ((cell & CELL_PATH_N) == CELL_PATH_N) {  //break north wall
+                visual_maze[workingX][workingY-1] = ' ';
+            }
+            if ((cell & CELL_PATH_S) == CELL_PATH_S) { //break south wall
+                visual_maze[workingX][workingY+1] = ' ';
+            }
+            if ((cell & CELL_PATH_E) == CELL_PATH_E) { //break east wall
+                visual_maze[workingX+1][workingY] = ' ';
+            }
+            if ((cell & CELL_PATH_W) == CELL_PATH_W) { //break west wall
+                visual_maze[workingX-1][workingY] = ' ';
+            }
         }
         printf("\n"); //also for check printing
-    } 
+    }
 
-    printf("\033[1;32m"); //set colour to green
+    // Print the visual maze
+    printf("\033[1;32m"); // Set color to green
 
-    //for actually printing to the terminal 
-    for (int y = 0; y < (MAZE_HEIGHT*2)+1; y++) { 
-        for (int x = 0; x < (MAZE_WIDTH*2)+1; x++) { 
+    //for actually printing to the terminal
+    for (int y = 0; y < (MAZE_HEIGHT*2)+1; y++) {
+        for (int x = 0; x < (MAZE_WIDTH*2)+1; x++) {
             //check if core is part of solution path or if the index in question lies between two cores that are part of the solution path and print a red pound sign
-            if ((visual_maze[x][y] == '#') || ((visual_maze[x][y] == ' ') && (visual_maze[x-1][y] == '#') && (visual_maze[x+1][y] == '#')) || ((visual_maze[x][y] == ' ') && (visual_maze[x][y-1] == '#') && (visual_maze[x][y+1] == '#'))) { //j i flipped down here
-                printf("\033[1;31m"); //switch to red
-                printf("# ");
-                printf("\033[1;32m"); //back to green
-            //for printing the center box in white so it stands out
-           } else if ((y > ((MAZE_WIDTH*2)+1)/2 - 4) && (y < ((MAZE_WIDTH*2)+1)/2 + 4) && (x > ((MAZE_HEIGHT*2)+1)/2 - 4) && (x < ((MAZE_HEIGHT*2)+1)/2 + 4)) {
-                printf("\033[1;37m"); //switch to white
-                printf("%c ", visual_maze[x][y]);
-                printf("\033[1;32m"); //back to green
-            } else {
+            if ((visual_maze[x][y] == '#') || ((visual_maze[x][y] == ' ') && x > 0 && x < MAZE_WIDTH*2 && visual_maze[x-1][y] == '#' && visual_maze[x+1][y] == '#') || ((visual_maze[x][y] == ' ') && y > 0 && y < MAZE_HEIGHT*2 && visual_maze[x][y-1] == '#' && visual_maze[x][y+1] == '#')) {
+                printf("\033[1;31m# \033[1;32m");
+            }
+            //Color center area white
+            else if ((y > ((MAZE_WIDTH*2)+1)/2 - 4) && (y < ((MAZE_WIDTH*2)+1)/2 + 4) && (x > ((MAZE_HEIGHT*2)+1)/2 - 4) && (x < ((MAZE_HEIGHT*2)+1)/2 + 4)) {
+                printf("\033[1;37m%c \033[1;32m", visual_maze[x][y]);
+            }
+            else {
                 printf("%c ", visual_maze[x][y]); //either open space or wall asterix
             }
         }
-    printf("\n");
+        printf("\n");
     }
-    printf("\033[0m"); //clear colours
+    printf("\033[0m"); //clear color
 }
-
 //Add entrance function to the 3x3 box. Will add entrance on each side of the box, in the middle
 void addEntranceToBox(){
     //Top left corner of 3x3
@@ -295,19 +287,19 @@ void addEntranceToBox(){
 
     //Top side entrance
     maze[get_index(start_x + 1, start_y - 1)] |= CELL_VISITED | CELL_PATH_S;
-    unfill((start_y * 2) - 1, (start_x * 2) + 3);
+    unfill((start_y * 2) - 1, (start_x * 2) + 1);
 
-    //Bottom side entrance
+    // Bottom side entrance
     maze[get_index(start_x + 1, start_y + 3)] |= CELL_VISITED | CELL_PATH_N;
-    unfill((start_y * 2) + 5, (start_x * 2) + 3);
+    unfill((start_y * 2) + 3, (start_x * 2) + 1);
 
     // Left side entrance
     maze[get_index(start_x - 1, start_y + 1)] |= CELL_VISITED | CELL_PATH_E;
-    unfill((start_y * 2) + 3, (start_x * 2) - 1);
+    unfill((start_y * 2) + 1, (start_x * 2) - 1);
 
     // Right side entrance
     maze[get_index(start_x + 3, start_y + 1)] |= CELL_VISITED | CELL_PATH_W;
-    unfill((start_y * 2) + 3, (start_x * 2) + 7);
+    unfill((start_y * 2) + 1, (start_x * 2) + 3);
 }
 
 //Function to add entrance, 4 entrance, 1 on each side of the maze, random position
@@ -424,13 +416,6 @@ bool allNines() {
 void dijkstra() {
     printf("starting dijkstra\n");
 
-    //initializes disances array to infinity
-    for (int y = 0; y < MAZE_HEIGHT; y++) {
-        for (int x = 0; x < MAZE_WIDTH; x++) {
-            distances[y][x] = INF;
-        }
-    }
-
     //pick starting cell as center
     Cell* center = graph[MAZE_HEIGHT/2][MAZE_WIDTH/2];
     Cell* moving = center;
@@ -443,24 +428,19 @@ void dijkstra() {
         Cell* nearest = NULL;
         moving->visited = true; //set current to be visited 
         distances[moving->y][moving->x] = INF; //remove from feasible distances to be explored in the future
-        //printf("coordinates of star vertex: x: %d, y: %d\n", moving->x, moving->y);
 
         //check all four neighbours and not leaving though the edge
         if (((moving->cellVal & CELL_PATH_N) == CELL_PATH_N) && (moving->y != 0)) {
             if ((moving->upNeigh)->visited == false) { //ensures has not yet found a guaruanteed shortest path to start
-                //cell to go to has already been seen
                 if ((moving->upNeigh)->previous != NULL) {
-                    //compare distance through new path with distance from other path and adjust if needed
                     if (((moving->distance) + 1) < ((moving->upNeigh)->previous)->distance) {
                         (moving->upNeigh)->distance = (moving->distance) + 1;
-                        (moving->upNeigh)->previous = moving; //save previous 
+                        (moving->upNeigh)->previous = moving;
                     }
-                //cell to go to has not yet been seen
-                } else if (((moving->upNeigh)->previous == NULL) && (moving->upNeigh != center)) { //second condtion ensures is not trying to go to center because center's previous will always be NULL
-                    (moving->upNeigh)->distance = (moving->distance) + 1; //only one option for distance
-                    (moving->upNeigh)->previous = moving; //save previous
+                } else if (((moving->upNeigh)->previous == NULL) && (moving->upNeigh != center)) {
+                    (moving->upNeigh)->distance = (moving->distance) + 1;
+                    (moving->upNeigh)->previous = moving;
                 }
-                //add the calcuated potential distance to the distances array
                 distances[(moving->upNeigh)->y][(moving->upNeigh)->x] = (moving->upNeigh)->distance;
             }
         }
@@ -510,8 +490,6 @@ void dijkstra() {
 
         int smallestD = INF; //reset smallest to INF
 
-        //printDists(); //check print of distances array
-
         //loop through distances array looking for the shortest distance (next cell to visit)
         for (int y = 0; y < MAZE_HEIGHT; y++) {
             for (int x = 0; x < MAZE_WIDTH; x++) {
@@ -523,7 +501,6 @@ void dijkstra() {
         }
 
         moving = nearest; //move to the closest cell
-        //printf("%d\n", smallestD);
     }
 }
 
@@ -535,10 +512,6 @@ int findPaths() {
 
     //evaluate Dijkstra's for evey exit
     for (int i = 0; i < exitsFound; i++) {
-
-        printf("working with exit %d\n", i);
-        printf("the exit is at x = %d, y = %d\n", exitLocations[i]->x, exitLocations[i]->y);
-
         Cell* current = exitLocations[i]; //start at the exit
         cellNum = 0;
         do{  //loop till reaches the middle
@@ -546,7 +519,6 @@ int findPaths() {
             paths[i][1][cellNum] = current->y;
             cellNum++;
             current = current->previous; //move along path
-
         } while (current != graph[MAZE_HEIGHT/2][MAZE_WIDTH/2]);
         paths[i][0][cellNum] = MAZE_WIDTH/2; //make sure origin gets included
         paths[i][1][cellNum] = MAZE_HEIGHT/2;
@@ -573,6 +545,58 @@ void displayPaths(int length) {
 
 //main function
 int main() {
+    //user interaction: get user's input
+    printf("Enter maze width (odd number, minimum 7): ");
+    scanf("%d", &MAZE_WIDTH);
+    printf("Enter maze height (odd number, minimum 7): ");
+    scanf("%d", &MAZE_HEIGHT);
+
+    //only odd and minimum of 7 inputs, check
+    if (MAZE_WIDTH % 2 == 0 || MAZE_HEIGHT % 2 == 0 || MAZE_WIDTH < 7 || MAZE_HEIGHT < 7) {
+        printf("Error: Dimensions must be odd numbers and at least 7x7.\n");
+        return 1;
+    }
+
+    //allocate memory for dynamic arrays
+    maze = (int*)malloc(sizeof(int) * MAZE_WIDTH * MAZE_HEIGHT);
+    
+    //allocate paths array 3D
+    paths = (int***)malloc(sizeof(int**) * 4);
+    for(int i=0; i<4; i++) {
+        paths[i] = (int**)malloc(sizeof(int*) * 2);
+        for(int j=0; j<2; j++) {
+            paths[i][j] = (int*)malloc(sizeof(int) * MAZE_WIDTH * MAZE_HEIGHT);
+            memset(paths[i][j], 0, sizeof(int) * MAZE_WIDTH * MAZE_HEIGHT);
+        }
+    }
+    
+    exitLocations = (Cell**)malloc(sizeof(Cell*) * 4);
+    stack = (Point*)malloc(sizeof(Point) * MAZE_WIDTH * MAZE_HEIGHT);
+    
+    //allocate distances array
+    distances = (int**)malloc(sizeof(int*) * MAZE_HEIGHT);
+    for(int i=0; i<MAZE_HEIGHT; i++) {
+        distances[i] = (int*)malloc(sizeof(int) * MAZE_WIDTH);
+        for(int j=0; j<MAZE_WIDTH; j++) {
+            distances[i][j] = INF;
+        }
+    }
+    
+    //allocate graph
+    graph = (Cell***)malloc(sizeof(Cell**) * MAZE_HEIGHT);
+    for(int i=0; i<MAZE_HEIGHT; i++) {
+        graph[i] = (Cell**)malloc(sizeof(Cell*) * MAZE_WIDTH);
+        for(int j=0; j<MAZE_WIDTH; j++) {
+            graph[i][j] = NULL;
+        }
+    }
+    
+    //allocate visual_maze
+    visual_maze = (char**)malloc(sizeof(char*) * ((MAZE_HEIGHT*2)+1));
+    for(int i=0; i<(MAZE_HEIGHT*2)+1; i++) {
+        visual_maze[i] = (char*)malloc(sizeof(char) * ((MAZE_WIDTH*2)+1));
+    }
+
     //generation
     generate_maze();
     addEntranceToBox();
@@ -582,14 +606,14 @@ int main() {
     print_maze(); 
 
     //solving
+    //solving
     bool displayed = false; 
     char ready[10]; //for getting use input
 
     while (!displayed) { //loop until the solution has been displayed
-        printf("Enter 'done' when you would like to see the solution\n");
+        printf("Enter 'reveal' when you would like to see the solution\n");
         scanf("%s", ready);
-        
-        if (strcmp(ready, "done") == 0) { //check if they entered done
+        if (strcmp(ready, "reveal") == 0) { //check if they entered done
             generate_graph();
             printf("Num exits: %d\n", exitsFound);
             dijkstra();
@@ -601,4 +625,38 @@ int main() {
             displayed = true; //solution has been displayed so program can end
         }
     }
+
+    //free all memory
+    free(maze);
+    
+    for(int i=0; i<4; i++) {
+        for(int j=0; j<2; j++) {
+            free(paths[i][j]);
+        }
+        free(paths[i]);
+    }
+    free(paths);
+    
+    free(exitLocations);
+    free(stack);
+    
+    for(int i=0; i<MAZE_HEIGHT; i++) {
+        free(distances[i]);
+        for(int j=0; j<MAZE_WIDTH; j++) {
+            if(graph[i][j] != NULL) {
+                free(graph[i][j]);
+            }
+        }
+        free(graph[i]);
+    }
+    free(distances);
+    free(graph);
+    
+    for(int i=0; i<(MAZE_HEIGHT*2)+1; i++) {
+        free(visual_maze[i]);
+    }
+    free(visual_maze);
+
+    return 0;
+
 }
