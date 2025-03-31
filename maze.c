@@ -408,14 +408,14 @@ void dijkstra() {
             printf("trying north\n");
             if ((moving->upNeigh)->visited == false) {
                 if ((moving->upNeigh)->previous != NULL) {
-                    printf("this already has been visited\n");
+                    printf("this already has been seen\n");
                     if (((moving->distance) + 1) < ((moving->upNeigh)->previous)->distance) {
                         printf("better distance\n");
                         (moving->upNeigh)->distance = (moving->distance) + 1;
                         (moving->upNeigh)->previous = moving;
                     }
                 } else if (((moving->upNeigh)->previous == NULL) && (moving->upNeigh != center)) {
-                    printf("new (not visited)\n");
+                    printf("new (not seen)\n");
                     (moving->upNeigh)->distance = (moving->distance) + 1;
                     (moving->upNeigh)->previous = moving;
                 }
@@ -426,14 +426,14 @@ void dijkstra() {
             printf("trying south\n");
             if ((moving->downNeigh)->visited == false) {
                 if ((moving->downNeigh)->previous != NULL) {
-                    printf("this already has been visited\n");
+                    printf("this already has been seen\n");
                     if (((moving->distance) + 1) < ((moving->downNeigh)->previous)->distance) {
                         printf("better distance\n");
                         (moving->downNeigh)->distance = (moving->distance) + 1;
                         (moving->downNeigh)->previous = moving;
                     }
                 } else if (((moving->downNeigh)->previous == NULL) && (moving->downNeigh != center)) {
-                    printf("new (not visited)\n");
+                    printf("new (not seen)\n");
                     (moving->downNeigh)->distance = (moving->distance) + 1;
                     (moving->downNeigh)->previous = moving;
                 }
@@ -444,14 +444,14 @@ void dijkstra() {
             printf("trying west\n");
             if ((moving->leftNeigh)->visited == false) {
                 if ((moving->leftNeigh)->previous != NULL) {
-                    printf("this already has been visited\n");
+                    printf("this already has been seen\n");
                     if (((moving->distance) + 1) < ((moving->leftNeigh)->previous)->distance) {
                         printf("better distance\n");
                         (moving->leftNeigh)->distance = (moving->distance) + 1;
                         (moving->leftNeigh)->previous = moving;
                     }
                 } else if (((moving->leftNeigh)->previous == NULL) && (moving->leftNeigh != center)) {
-                    printf("new (not visited)\n");
+                    printf("new (not seen)\n");
                     (moving->leftNeigh)->distance = (moving->distance) + 1;
                     (moving->leftNeigh)->previous = moving;
                 }
@@ -462,14 +462,14 @@ void dijkstra() {
             printf("trying east\n");
             if ((moving->rightNeigh)->visited == false) {
                 if ((moving->rightNeigh)->previous != NULL) {
-                    printf("this already has been visited\n");
+                    printf("this already has been seen\n");
                     if (((moving->distance) + 1) < ((moving->rightNeigh)->previous)->distance) {
                         printf("better distance\n");
                         (moving->rightNeigh)->distance = (moving->distance) + 1;
                         (moving->rightNeigh)->previous = moving;
                     }
                 } else if (((moving->rightNeigh)->previous == NULL) && (moving->rightNeigh != center)) {
-                    printf("new (not visited)\n");
+                    printf("new (not seen)\n");
                     (moving->rightNeigh)->distance = (moving->distance) + 1;
                     (moving->rightNeigh)->previous = moving;
                 }
