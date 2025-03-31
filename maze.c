@@ -216,7 +216,7 @@ void generate_maze(){
 }
 
 void unfill(int outputX, int outputY) {
-    visual_maze[outputY][outputX] = ' ';
+    visual_maze[outputX][outputY] = ' ';
 }
 
 void print_maze() {
@@ -355,10 +355,10 @@ Cell* createCell(int x, int y) {
 void generate_graph() {
     printf("started graphing\n");
 
-    for (int i = 0; i < MAZE_HEIGHT; i++) { //down rows
-        for (int j = 0; j < MAZE_WIDTH; j++) { //across columns
-            Cell* current = createCell(i, j);
-            graph[i][j] = current;
+    for (int y = 0; y < MAZE_HEIGHT; y++) { //down rows
+        for (int x = 0; x < MAZE_WIDTH; x++) { //across columns
+            Cell* current = createCell(x, y);
+            graph[y][x] = current;
         }
     }
 
@@ -369,19 +369,19 @@ void generate_graph() {
                 //if exit found
                 exitLocations[exitsFound] = current;
                 exitsFound++;
-                printf("An exit found at x=%d, y=%d!\n", c, r);
+                printf("An exit found at x=%d, y=%d!\n", r, c);
             }
-            if (((current->cellVal & CELL_PATH_N) == CELL_PATH_N) && (r != 0)) {
-                current->upNeigh = graph[r][c-1];
+            if (((current->cellVal & CELL_PATH_N) == CELL_PATH_N) && (c != 0)) {
+                current->upNeigh = graph[c-1][r];
             }
-            if (((current->cellVal & CELL_PATH_S) == CELL_PATH_S) && (r != (MAZE_HEIGHT - 1))) {
-                current->downNeigh = graph[r][c+1];
+            if (((current->cellVal & CELL_PATH_S) == CELL_PATH_S) && (c != (MAZE_HEIGHT - 1))) {
+                current->downNeigh = graph[c+1][r];
             }
-            if (((current->cellVal & CELL_PATH_W) == CELL_PATH_W) && (c != 0)) {
-                current->leftNeigh = graph[r-1][c];
+            if (((current->cellVal & CELL_PATH_W) == CELL_PATH_W) && (r != 0)) {
+                current->leftNeigh = graph[c][r-1];
             }
-            if (((current->cellVal & CELL_PATH_E) == CELL_PATH_E) && (c != (MAZE_WIDTH - 1))) {
-                current->rightNeigh = graph[r+1][c];
+            if (((current->cellVal & CELL_PATH_E) == CELL_PATH_E) && (r != (MAZE_WIDTH - 1))) {
+                current->rightNeigh = graph[c][r+1];
             }
         }
     }
@@ -409,7 +409,8 @@ void dijkstra() {
             if ((moving->upNeigh)->visited == false) {
                 if ((moving->upNeigh)->previous != NULL) {
                     printf("this already has been visited\n");
-                    if ((moving->distance) + 1 < ((moving->upNeigh)->previous)->distance) {
+                    if (((moving->distance) + 1) < ((moving->upNeigh)->previous)->distance) {
+                        printf("better distance\n");
                         (moving->upNeigh)->distance = (moving->distance) + 1;
                         (moving->upNeigh)->previous = moving;
                         if ((moving->upNeigh)->distance < smallestD) {
@@ -433,7 +434,8 @@ void dijkstra() {
             if ((moving->downNeigh)->visited == false) {
                 if ((moving->downNeigh)->previous != NULL) {
                     printf("this already has been visited\n");
-                    if ((moving->distance) + 1 < ((moving->downNeigh)->previous)->distance) {
+                    if (((moving->distance) + 1) < ((moving->downNeigh)->previous)->distance) {
+                        printf("better distance\n");
                         (moving->downNeigh)->distance = (moving->distance) + 1;
                         (moving->downNeigh)->previous = moving;
                         if ((moving->downNeigh)->distance < smallestD) {
@@ -458,7 +460,8 @@ void dijkstra() {
             if ((moving->leftNeigh)->visited == false) {
                 if ((moving->leftNeigh)->previous != NULL) {
                     printf("this already has been visited\n");
-                    if ((moving->distance) + 1 < ((moving->leftNeigh)->previous)->distance) {
+                    if (((moving->distance) + 1) < ((moving->leftNeigh)->previous)->distance) {
+                        printf("better distance\n");
                         (moving->leftNeigh)->distance = (moving->distance) + 1;
                         (moving->leftNeigh)->previous = moving;
                         if ((moving->leftNeigh)->distance < smallestD) {
@@ -482,7 +485,8 @@ void dijkstra() {
             if ((moving->rightNeigh)->visited == false) {
                 if ((moving->rightNeigh)->previous != NULL) {
                     printf("this already has been visited\n");
-                    if ((moving->distance) + 1 < ((moving->rightNeigh)->previous)->distance) {
+                    if (((moving->distance) + 1) < ((moving->rightNeigh)->previous)->distance) {
+                        printf("better distance\n");
                         (moving->rightNeigh)->distance = (moving->distance) + 1;
                         (moving->rightNeigh)->previous = moving;
                         if ((moving->rightNeigh)->distance < smallestD) {
@@ -490,7 +494,7 @@ void dijkstra() {
                             nearest = moving->rightNeigh;
                         }
                     }
-                } else if (((moving->rightNeigh)->previous == NULL) && (moving->downNeigh != center)) {
+                } else if (((moving->rightNeigh)->previous == NULL) && (moving->rightNeigh != center)) {
                     printf("new (not visited)\n");
                     (moving->rightNeigh)->distance = (moving->distance) + 1;
                     (moving->rightNeigh)->previous = moving;
@@ -500,8 +504,13 @@ void dijkstra() {
                     }
                 }
             }
+        } if (nearest == NULL) {
+            printf("nowhere else to go\n");
+            moving = moving->previous;
+            continue;
         }
         moving = nearest;
+        printf("%d\n", smallestD);
     }
 
 
