@@ -6,8 +6,8 @@
 //#include <gtk/gtk.h>
 
 //Define the size of the maze, can be change
-#define MAZE_WIDTH 7 // DO ODD
-#define MAZE_HEIGHT 7 //DO ODD
+#define MAZE_WIDTH 11 // DO ODD
+#define MAZE_HEIGHT 11 //DO ODD
 #define INF 9999
 
 //Paths: North, South, East, and West
@@ -262,7 +262,7 @@ void print_maze() {
 
     for (int y = 0; y < (MAZE_HEIGHT*2)+1; y++) { //how many rows to print
         for (int x = 0; x < (MAZE_WIDTH*2)+1; x++) { //along row
-            if ((visual_maze[y][x] == '#') || ((visual_maze[y][x] == ' ') && (visual_maze[y-1][x] == '#') && (visual_maze[y+1][x] == '#')) || ((visual_maze[y][x] == ' ') && (visual_maze[y][x-1] == '#') && (visual_maze[y][x+1] == '#'))) { //j i flipped down here
+            if ((visual_maze[x][y] == '#') || ((visual_maze[x][y] == ' ') && (visual_maze[x-1][y] == '#') && (visual_maze[x+1][y] == '#')) || ((visual_maze[x][y] == ' ') && (visual_maze[x][y-1] == '#') && (visual_maze[x][y+1] == '#'))) { //j i flipped down here
                 printf("\033[1;31m");
                 printf("# ");
                 printf("\033[1;32m");
@@ -414,7 +414,7 @@ void dijkstra() {
     Cell* center = graph[MAZE_HEIGHT/2][MAZE_WIDTH/2];
     Cell* moving = center;
     center->distance = 0;
-    distances[MAZE_HEIGHT/2][MAZE_WIDTH/2] = INF;
+    distances[MAZE_HEIGHT/2][MAZE_WIDTH/2] = 0;
     //variables for where to go next
     
     while (allNines()) { //number of passes
@@ -516,17 +516,23 @@ void dijkstra() {
 
 //function will run dijskstra's four times and determine which path is the shortest. This path will be passed into the display path functoin
 int findPaths() {
+    printf("in find paths\n");
     int cellNum, pathL = INF;
 
     for (int i = 0; i < exitsFound; i++) {
+        printf("working with exit %d\n", i);
+        printf("the exit is at x = %d, y = %d\n", exitLocations[i]->x, exitLocations[i]->y);
         Cell* current = exitLocations[i]; //start at the exit
         cellNum = 0;
         do{  //loop till reaches the middle
+            printf("in do while\n");
+            printf("current x: %d, current y: %d\n", current->x, current->y);
             paths[i][0][cellNum] = current->x;
             paths[i][1][cellNum] = current->y;
             cellNum++;
+            printf("previous x: %d, previous y: %d\n", (current->previous)->x, (current->previous)->y);
             current = current->previous;
-        } while (current->distance != 0);
+        } while (current != graph[MAZE_HEIGHT/2][MAZE_WIDTH/2]);
         paths[i][0][cellNum] = MAZE_WIDTH/2; //make sure origin gets included
         paths[i][1][cellNum] = MAZE_HEIGHT/2;
 
