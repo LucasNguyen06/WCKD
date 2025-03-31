@@ -404,7 +404,7 @@ void dijkstra() {
         moving->visited = true;
         printf("coordinates of star vertex: x: %d, y: %d\n", moving->x, moving->y);
         //check all four neighbours
-        if ((moving->cellVal & CELL_PATH_N) == CELL_PATH_N) {
+        if (((moving->cellVal & CELL_PATH_N) == CELL_PATH_N) && (moving->y != 0)) {
             printf("trying north\n");
             if ((moving->upNeigh)->visited == false) {
                 if ((moving->upNeigh)->previous != NULL) {
@@ -429,7 +429,7 @@ void dijkstra() {
                 }
             }
         }
-        if ((moving->cellVal & CELL_PATH_S) == CELL_PATH_S) {
+        if (((moving->cellVal & CELL_PATH_S) == CELL_PATH_S) && (moving->y != (MAZE_HEIGHT - 1))) {
             printf("trying south\n");
             if ((moving->downNeigh)->visited == false) {
                 if ((moving->downNeigh)->previous != NULL) {
@@ -455,7 +455,7 @@ void dijkstra() {
                 }
             }
         }
-        if ((moving->cellVal & CELL_PATH_W) == CELL_PATH_W) {
+        if (((moving->cellVal & CELL_PATH_W) == CELL_PATH_W) && (moving->x != 0)) {
             printf("trying west\n");
             if ((moving->leftNeigh)->visited == false) {
                 if ((moving->leftNeigh)->previous != NULL) {
@@ -480,7 +480,7 @@ void dijkstra() {
                 }
             }
         }
-        if ((moving->cellVal & CELL_PATH_E) == CELL_PATH_E) {
+        if (((moving->cellVal & CELL_PATH_E) == CELL_PATH_E) && (moving->x != (MAZE_WIDTH-1))) {
             printf("trying east\n");
             if ((moving->rightNeigh)->visited == false) {
                 if ((moving->rightNeigh)->previous != NULL) {
