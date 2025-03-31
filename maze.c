@@ -8,7 +8,7 @@
 //Define the size of the maze, can be change
 #define MAZE_WIDTH 7 // DO ODD
 #define MAZE_HEIGHT 7 //DO ODD
-#define INF 999
+#define INF 9999
 
 //Paths: North, South, East, and West
 //Using hexidecimal as bit flag
@@ -51,7 +51,6 @@ Cell* exitLocations[4];
 Point stack[MAZE_HEIGHT * MAZE_WIDTH];
 //stack for solving
 int distances[MAZE_HEIGHT][MAZE_WIDTH];
-memset(distances, 9999, sizeof(distances[0][0]*MAZE_HEIGHT*MAZE_WIDTH));
 //track number of elements in stack
 int stack_size = -1;
 //track number of visited cells
@@ -428,8 +427,8 @@ void dijkstra() {
                     (moving->upNeigh)->distance = (moving->distance) + 1;
                     (moving->upNeigh)->previous = moving;
                 }
+                distances[(moving->upNeigh)->y][(moving->upNeigh)->x] = (moving->upNeigh)->distance;
             }
-            distances[(moving->upNeigh)->y][(moving->upNeigh)->x] = (moving->upNeigh)->distance;
         }
         if (((moving->cellVal & CELL_PATH_S) == CELL_PATH_S) && (moving->y != (MAZE_HEIGHT - 1))) {
             printf("trying south\n");
@@ -446,8 +445,8 @@ void dijkstra() {
                     (moving->downNeigh)->distance = (moving->distance) + 1;
                     (moving->downNeigh)->previous = moving;
                 }
+                distances[(moving->downNeigh)->y][(moving->downNeigh)->x] = (moving->downNeigh)->distance;
             }
-            distances[(moving->downNeigh)->y][(moving->downNeigh)->x] = (moving->downNeigh)->distance;
         }
         if (((moving->cellVal & CELL_PATH_W) == CELL_PATH_W) && (moving->x != 0)) {
             printf("trying west\n");
@@ -464,8 +463,8 @@ void dijkstra() {
                     (moving->leftNeigh)->distance = (moving->distance) + 1;
                     (moving->leftNeigh)->previous = moving;
                 }
-            }
             distances[(moving->leftNeigh)->y][(moving->leftNeigh)->x] = (moving->leftNeigh)->distance;
+            }
         }
         if (((moving->cellVal & CELL_PATH_E) == CELL_PATH_E) && (moving->x != (MAZE_WIDTH-1))) {
             printf("trying east\n");
@@ -482,8 +481,8 @@ void dijkstra() {
                     (moving->rightNeigh)->distance = (moving->distance) + 1;
                     (moving->rightNeigh)->previous = moving;
                 }
-            }
             distances[(moving->rightNeigh)->y][(moving->rightNeigh)->x] = (moving->rightNeigh)->distance;
+            }
         } 
 
         int smallestD = INF;
@@ -541,6 +540,11 @@ void displayPaths(int length) {
 
  
 int main() {
+    for (int y = 0; y < MAZE_HEIGHT; y++) {
+        for (int x = 0; x < MAZE_WIDTH; x++) {
+            distances[y][x] = 9999;
+        }
+    }
     generate_maze();
     printf("in main single check\n");
     addEntranceToBox();
