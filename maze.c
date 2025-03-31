@@ -269,10 +269,10 @@ void print_maze() {
                 printf("\033[1;32m");
            } else if ((y > ((MAZE_WIDTH*2)+1)/2 - 4) && (y < ((MAZE_WIDTH*2)+1)/2 + 4) && (x > ((MAZE_HEIGHT*2)+1)/2 - 4) && (x < ((MAZE_HEIGHT*2)+1)/2 + 4)) {
                 printf("\033[1;37m");
-                printf("%c ", visual_maze[y][x]);
+                printf("%c ", visual_maze[x][y]);
                 printf("\033[1;32m");
             } else {
-                printf("%c ", visual_maze[y][x]);
+                printf("%c ", visual_maze[x][y]);
             }
         }
     printf("\n");
