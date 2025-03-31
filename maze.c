@@ -8,7 +8,7 @@
 //Define the size of the maze, can be change
 #define MAZE_WIDTH 7 // DO ODD
 #define MAZE_HEIGHT 7 //DO ODD
-#define INF 999999
+#define INF 999
 
 //Paths: North, South, East, and West
 //Using hexidecimal as bit flag
@@ -50,7 +50,8 @@ Cell* exitLocations[4];
 //stack for gen back tracking
 Point stack[MAZE_HEIGHT * MAZE_WIDTH];
 //stack for solving
-int distances[MAZE_HEIGHT][MAZE_WIDTH] = {INF};
+int distances[MAZE_HEIGHT][MAZE_WIDTH];
+memset(distances, 9999, sizeof(distances[0][0]*MAZE_HEIGHT*MAZE_WIDTH));
 //track number of elements in stack
 int stack_size = -1;
 //track number of visited cells
@@ -388,17 +389,25 @@ void generate_graph() {
     printf("graph filled!\n");
 }
 
+void printDists() {
+    for (int y = 0; y < MAZE_HEIGHT; y++) {
+        for (int x = 0; x < MAZE_WIDTH; x++) {
+            printf("%4d ", distances[y][x]);
+        }
+        printf("\n");
+    }
+}
 //function will run dijkstra's on the graph given the graph and the destination 
 void dijkstra() {
     printf("starting dijkstra\n");
     Cell* center = graph[MAZE_HEIGHT/2][MAZE_WIDTH/2];
     Cell* moving = center;
     center->distance = 0;
+    distances[MAZE_HEIGHT/2][MAZE_WIDTH/2] = INF;
     //variables for where to go next
     
     for (int i = 0; i < (MAZE_HEIGHT*MAZE_WIDTH); i++) { //number of passes
         printf("pass: %d\n", i);
-        int smallestD = INF;
         Cell* nearest = NULL;
         moving->visited = true;
         distances[moving->y][moving->x] = INF;
@@ -476,7 +485,11 @@ void dijkstra() {
             }
             distances[(moving->rightNeigh)->y][(moving->rightNeigh)->x] = (moving->rightNeigh)->distance;
         } 
-        
+
+        int smallestD = INF;
+
+        printDists();
+
         for (int y = 0; y < MAZE_HEIGHT; y++) {
             for (int x = 0; x < MAZE_WIDTH; x++) {
                 if (distances[y][x] < smallestD) {
@@ -537,7 +550,7 @@ int main() {
     generate_graph();
     printf("Num exits: %d\n", exitsFound);
     dijkstra();
-    //int pathL = findPaths();
-    //displayPaths(pathL);
-    //print_maze();
+    int pathL = findPaths();
+    displayPaths(pathL);
+    print_maze();
 }
