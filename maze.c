@@ -362,26 +362,26 @@ void generate_graph() {
         }
     }
 
-    for (int r = 0; r < MAZE_HEIGHT; r++) {
-        for (int c = 0; c < MAZE_WIDTH; c++) {
-            Cell* current = graph[r][c];
+    for (int y = 0; y < MAZE_HEIGHT; y++) {
+        for (int x = 0; x < MAZE_WIDTH; x++) {
+            Cell* current = graph[y][x];
             if ((current->cellVal & CELL_EXIT) == CELL_EXIT) {
                 //if exit found
                 exitLocations[exitsFound] = current;
                 exitsFound++;
-                printf("An exit found at x=%d, y=%d!\n", r, c);
+                printf("An exit found at y=%d, x=%d!\n", y, x);
             }
-            if (((current->cellVal & CELL_PATH_N) == CELL_PATH_N) && (c != 0)) {
-                current->upNeigh = graph[c-1][r];
+            if (((current->cellVal & CELL_PATH_N) == CELL_PATH_N) && (y != 0)) {
+                current->upNeigh = graph[y-1][x];
             }
-            if (((current->cellVal & CELL_PATH_S) == CELL_PATH_S) && (c != (MAZE_HEIGHT - 1))) {
-                current->downNeigh = graph[c+1][r];
+            if (((current->cellVal & CELL_PATH_S) == CELL_PATH_S) && (y != (MAZE_HEIGHT - 1))) {
+                current->downNeigh = graph[y+1][x];
             }
-            if (((current->cellVal & CELL_PATH_W) == CELL_PATH_W) && (r != 0)) {
-                current->leftNeigh = graph[c][r-1];
+            if (((current->cellVal & CELL_PATH_W) == CELL_PATH_W) && (x != 0)) {
+                current->leftNeigh = graph[y][x-1];
             }
-            if (((current->cellVal & CELL_PATH_E) == CELL_PATH_E) && (r != (MAZE_WIDTH - 1))) {
-                current->rightNeigh = graph[c][r+1];
+            if (((current->cellVal & CELL_PATH_E) == CELL_PATH_E) && (x != (MAZE_WIDTH - 1))) {
+                current->rightNeigh = graph[y][x+1];
             }
         }
     }
