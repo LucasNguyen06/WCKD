@@ -396,6 +396,18 @@ void printDists() {
         printf("\n");
     }
 }
+
+bool allNines() {
+    bool foundIssue = false;
+    for (int y = 0; y < MAZE_HEIGHT; y++) {
+        for (int x = 0; x < MAZE_WIDTH; x++) {
+            if (distances[y][x] != 9999) {
+                foundIssue = true;
+            }
+        }
+    }
+    return foundIssue;
+}
 //function will run dijkstra's on the graph given the graph and the destination 
 void dijkstra() {
     printf("starting dijkstra\n");
@@ -405,8 +417,7 @@ void dijkstra() {
     distances[MAZE_HEIGHT/2][MAZE_WIDTH/2] = INF;
     //variables for where to go next
     
-    for (int i = 0; i < (MAZE_HEIGHT*MAZE_WIDTH); i++) { //number of passes
-        printf("pass: %d\n", i);
+    while (allNines()) { //number of passes
         Cell* nearest = NULL;
         moving->visited = true;
         distances[moving->y][moving->x] = INF;
@@ -501,8 +512,6 @@ void dijkstra() {
         moving = nearest;
         printf("%d\n", smallestD);
     }
-
-
 }
 
 //function will run dijskstra's four times and determine which path is the shortest. This path will be passed into the display path functoin
@@ -554,6 +563,7 @@ int main() {
     generate_graph();
     printf("Num exits: %d\n", exitsFound);
     dijkstra();
+    printf("dijkstra done\n");
     int pathL = findPaths();
     displayPaths(pathL);
     print_maze();
