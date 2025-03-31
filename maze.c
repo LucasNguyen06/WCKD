@@ -50,9 +50,7 @@ Cell* exitLocations[4];
 //stack for gen back tracking
 Point stack[MAZE_HEIGHT * MAZE_WIDTH];
 //stack for solving
-Cell* stackC[MAZE_HEIGHT * MAZE_WIDTH];
-//track number of elements in stackC
-int stackC_size = 0;
+int distances[MAZE_HEIGHT][MAZE_WIDTH] = {-1};
 //track number of elements in stack
 int stack_size = -1;
 //track number of visited cells
@@ -80,6 +78,7 @@ void pushP(Point p){
 Point popP(){
     return stack[--stack_size];
 }
+
 
 //Function that converts 2D array to 1D array index.
 //For easier access to 2D grid using 1D array
@@ -402,6 +401,7 @@ void dijkstra() {
         int smallestD = INF;
         Cell* nearest = NULL;
         moving->visited = true;
+        distances[moving->y][moving->x] = -1;
         printf("coordinates of star vertex: x: %d, y: %d\n", moving->x, moving->y);
         //check all four neighbours
         if (((moving->cellVal & CELL_PATH_N) == CELL_PATH_N) && (moving->y != 0)) {
@@ -413,21 +413,14 @@ void dijkstra() {
                         printf("better distance\n");
                         (moving->upNeigh)->distance = (moving->distance) + 1;
                         (moving->upNeigh)->previous = moving;
-                        if ((moving->upNeigh)->distance < smallestD) {
-                            smallestD = (moving->upNeigh)->distance;
-                            nearest = moving->upNeigh;
-                        }
                     }
                 } else if (((moving->upNeigh)->previous == NULL) && (moving->upNeigh != center)) {
                     printf("new (not visited)\n");
                     (moving->upNeigh)->distance = (moving->distance) + 1;
                     (moving->upNeigh)->previous = moving;
-                    if ((moving->upNeigh)->distance < smallestD) {
-                        smallestD = (moving->upNeigh)->distance;
-                        nearest = moving->upNeigh;
-                    }
                 }
             }
+            distances[(moving->upNeigh)->y][(moving->upNeigh)->x] = (moving->upNeigh)->distance;
         }
         if (((moving->cellVal & CELL_PATH_S) == CELL_PATH_S) && (moving->y != (MAZE_HEIGHT - 1))) {
             printf("trying south\n");
@@ -438,22 +431,14 @@ void dijkstra() {
                         printf("better distance\n");
                         (moving->downNeigh)->distance = (moving->distance) + 1;
                         (moving->downNeigh)->previous = moving;
-                        if ((moving->downNeigh)->distance < smallestD) {
-                            smallestD = (moving->downNeigh)->distance;
-                            nearest = moving->downNeigh;
-                        }
                     }
                 } else if (((moving->downNeigh)->previous == NULL) && (moving->downNeigh != center)) {
                     printf("new (not visited)\n");
                     (moving->downNeigh)->distance = (moving->distance) + 1;
                     (moving->downNeigh)->previous = moving;
-                    if ((moving->downNeigh)->distance < smallestD) {
-                        smallestD = (moving->downNeigh)->distance;
-                        nearest = moving->downNeigh;
-                    }
-                    
                 }
             }
+            distances[(moving->downNeigh)->y][(moving->downNeigh)->x] = (moving->downNeigh)->distance;
         }
         if (((moving->cellVal & CELL_PATH_W) == CELL_PATH_W) && (moving->x != 0)) {
             printf("trying west\n");
@@ -464,21 +449,14 @@ void dijkstra() {
                         printf("better distance\n");
                         (moving->leftNeigh)->distance = (moving->distance) + 1;
                         (moving->leftNeigh)->previous = moving;
-                        if ((moving->leftNeigh)->distance < smallestD) {
-                            smallestD = (moving->leftNeigh)->distance;
-                            nearest = moving->leftNeigh;
-                        }
                     }
                 } else if (((moving->leftNeigh)->previous == NULL) && (moving->leftNeigh != center)) {
                     printf("new (not visited)\n");
                     (moving->leftNeigh)->distance = (moving->distance) + 1;
                     (moving->leftNeigh)->previous = moving;
-                    if ((moving->leftNeigh)->distance < smallestD) {
-                        smallestD = (moving->leftNeigh)->distance;
-                        nearest = moving->leftNeigh;
-                    }
                 }
             }
+            distances[(moving->leftNeigh)->y][(moving->leftNeigh)->x] = (moving->leftNeigh)->distance;
         }
         if (((moving->cellVal & CELL_PATH_E) == CELL_PATH_E) && (moving->x != (MAZE_WIDTH-1))) {
             printf("trying east\n");
@@ -489,26 +467,25 @@ void dijkstra() {
                         printf("better distance\n");
                         (moving->rightNeigh)->distance = (moving->distance) + 1;
                         (moving->rightNeigh)->previous = moving;
-                        if ((moving->rightNeigh)->distance < smallestD) {
-                            smallestD = (moving->rightNeigh)->distance;
-                            nearest = moving->rightNeigh;
-                        }
                     }
                 } else if (((moving->rightNeigh)->previous == NULL) && (moving->rightNeigh != center)) {
                     printf("new (not visited)\n");
                     (moving->rightNeigh)->distance = (moving->distance) + 1;
                     (moving->rightNeigh)->previous = moving;
-                    if ((moving->rightNeigh)->distance < smallestD) {
-                        smallestD = (moving->rightNeigh)->distance;
-                        nearest = moving->rightNeigh;
-                    }
                 }
             }
-        } if (nearest == NULL) {
-            printf("nowhere else to go\n");
-            moving = moving->previous;
-            continue;
+            distances[(moving->rightNeigh)->y][(moving->rightNeigh)->x] = (moving->rightNeigh)->distance;
+        } 
+        
+        for (int y = 0; y < MAZE_HEIGHT; y++) {
+            for (int x = 0; x < MAZE_WIDTH; x++) {
+                if (distances[y][x] < smallestD) {
+                    smallestD = distances[y][x];
+                    nearest = graph[y][x];
+                }
+            }
         }
+
         moving = nearest;
         printf("%d\n", smallestD);
     }
