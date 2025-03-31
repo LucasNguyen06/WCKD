@@ -8,7 +8,7 @@
 //Define the size of the maze, can be change
 #define MAZE_WIDTH 7 // DO ODD
 #define MAZE_HEIGHT 7 //DO ODD
-#define INF 999999;
+#define INF 999999
 
 //Paths: North, South, East, and West
 //Using hexidecimal as bit flag
@@ -50,7 +50,7 @@ Cell* exitLocations[4];
 //stack for gen back tracking
 Point stack[MAZE_HEIGHT * MAZE_WIDTH];
 //stack for solving
-int distances[MAZE_HEIGHT][MAZE_WIDTH] = {-1};
+int distances[MAZE_HEIGHT][MAZE_WIDTH] = {INF};
 //track number of elements in stack
 int stack_size = -1;
 //track number of visited cells
@@ -401,7 +401,7 @@ void dijkstra() {
         int smallestD = INF;
         Cell* nearest = NULL;
         moving->visited = true;
-        distances[moving->y][moving->x] = -1;
+        distances[moving->y][moving->x] = INF;
         printf("coordinates of star vertex: x: %d, y: %d\n", moving->x, moving->y);
         //check all four neighbours
         if (((moving->cellVal & CELL_PATH_N) == CELL_PATH_N) && (moving->y != 0)) {
