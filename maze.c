@@ -514,6 +514,7 @@ int findPaths() {
     for (int i = 0; i < exitsFound; i++) {
         Cell* current = exitLocations[i]; //start at the exit
         cellNum = 0;
+        printf("working with exit at x = %d, y = %d\n", exitLocations[i]->x, exitLocations[i]->y);
         do{  //loop till reaches the middle
             paths[i][0][cellNum] = current->x;
             paths[i][1][cellNum] = current->y;
@@ -546,14 +547,14 @@ void displayPaths(int length) {
 //main function
 int main() {
     //user interaction: get user's input
-    printf("Enter maze width (odd number, minimum 7): ");
+    printf("Enter maze width (odd number, minimum 9): ");
     scanf("%d", &MAZE_WIDTH);
-    printf("Enter maze height (odd number, minimum 7): ");
+    printf("Enter maze height (odd number, minimum 9): ");
     scanf("%d", &MAZE_HEIGHT);
 
     //only odd and minimum of 7 inputs, check
     if (MAZE_WIDTH % 2 == 0 || MAZE_HEIGHT % 2 == 0 || MAZE_WIDTH < 7 || MAZE_HEIGHT < 7) {
-        printf("Error: Dimensions must be odd numbers and at least 7x7.\n");
+        printf("Error: Dimensions must be odd numbers and at least 9x9.\n");
         return 1;
     }
 
