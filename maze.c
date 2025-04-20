@@ -659,5 +659,4 @@ int main() {
     free(visual_maze);
 
     return 0;
-
 }
