@@ -34,3 +34,12 @@ The solver treats the maze as a weighted graph where each cell is a node and eac
 ## 📂 File Structure
 * `maze.c`: Contains the core logic for generation, solving, and memory management.
 * `structs`: Custom definitions for `Point` (coordinate tracking) and `Cell` (graph node data).
+
+## 👥 Contributors of Team WCKD
+* Lucas Nguyen
+* Andrew Thomas
+* Ethan Wu
+* Eamonn Wong
+
+-----------------------------------------------------------------------------------------------------------------------------------------------
+Developed at Queen's University - Smith School of Engineering
