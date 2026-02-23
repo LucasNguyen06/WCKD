@@ -21,7 +21,7 @@ This project was developed as a final technical challenge for **MREN 178** at Qu
 ## 🧠 How It Works
 
 ### 1. Generation (Recursive Backtracking)
-The maze starts from a central 3x3 "origin" box. The algorithm moves to a random unvisited neighbor, carving a path and pushing the location onto a stack. When it hits a dead end, it pops from the stack to backtrack until it finds a cell with unvisited neighbors, ensuring 100% coverage of the grid.
+The maze starts from a central 3x3 "origin" box, and ask for the users' input of how big they want their maze to be(it has to be an odd number over 7). The algorithm then moves to a random unvisited neighbor, carving a path and pushing the location onto a stack. When it hits a dead end, it pops from the stack to backtrack until it finds a cell with unvisited neighbors, ensuring 100% coverage of the grid.
 
 
 
@@ -34,8 +34,3 @@ The solver treats the maze as a weighted graph where each cell is a node and eac
 ## 📂 File Structure
 * `main.c`: Contains the core logic for generation, solving, and memory management.
 * `structs`: Custom definitions for `Point` (coordinate tracking) and `Cell` (graph node data).
-
-## 🔧 Installation & Usage
-1. **Clone the repo:**
-   ```bash
-   git clone [https://github.com/yourusername/project-daedalus.git](https://github.com/yourusername/project-daedalus.git)
