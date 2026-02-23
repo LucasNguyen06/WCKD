@@ -32,5 +32,5 @@ The solver treats the maze as a weighted graph where each cell is a node and eac
 * It compares the distance to all four exits and selects the one with the lowest total cost.
 
 ## 📂 File Structure
-* `main.c`: Contains the core logic for generation, solving, and memory management.
+* `maze.c`: Contains the core logic for generation, solving, and memory management.
 * `structs`: Custom definitions for `Point` (coordinate tracking) and `Cell` (graph node data).
